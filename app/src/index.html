@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiplayer Game</title>
+    <script type="module" src="js/app.js"></script>
+
+</head>
+<body>
+    
+    <div>
+        <input id="server" type="text" value="ws://localhost:4000/command"/>
+        <button id="connect">Connect</button>
+        <button id="disconnect">Disconnect</button>
+    </div>
+    
+    <div>
+        <input id="message" type="text" value="Message to server"/>
+        <button id="send">Send message</button>
+    </div>
+    
+    <pre id="status">Status: Disconnected</pre>
+    <pre id="output"></pre>
+
+    <div id="canvas" style="position: relative; width: 600px; height: 600px; border: 1px solid;"></div>
+</body>
+</html>

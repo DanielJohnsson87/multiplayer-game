@@ -1,0 +1,17 @@
+{
+  "name": "multiplayer-app",
+  "source": "src/index.html",
+  "browserslist": "> 0.5%, last 2 versions, not dead",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "yarn parcel src/index.html -p 9000",
+    "build": "yarn parcel build"
+  },
+  "devDependencies": {
+    "parcel": "latest",
+    "prettier": "^2.4.1"
+  },
+  "dependencies": {
+    "@reduxjs/toolkit": "^1.6.2"
+  }
+}
