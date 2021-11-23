@@ -47,6 +47,7 @@ function destroy() {
   }
 
   store.dispatch(resetPlayerState());
+  gameLoop.unsubscribe("movePlayer");
 }
 
 /**

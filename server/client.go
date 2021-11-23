@@ -2,15 +2,17 @@ package main
 
 import (
 	"log"
+	"math/rand"
 	"net/http"
 
 	"github.com/gorilla/websocket"
 )
 
 type Client struct {
-	hub  *Hub
-	conn *websocket.Conn
-	send chan ClientMessage
+	psudoId int
+	hub     *Hub
+	conn    *websocket.Conn
+	send    chan ClientMessage
 }
 
 type ClientMessage struct {
@@ -30,10 +32,11 @@ func handleWebsocket(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := &Client{hub: hub, conn: conn, send: make(chan ClientMessage)}
+	psudoRandomId := rand.Intn(1000) // TODO not a good id. Should use UUID or something
+	client := &Client{psudoId: psudoRandomId, hub: hub, conn: conn, send: make(chan ClientMessage)}
 	client.hub.register <- client
 
-	log.Printf("Connection established: IP %s", conn.RemoteAddr().String())
+	log.Printf("Connection established: IP %s, psudo ID: %d", conn.RemoteAddr().String(), psudoRandomId)
 
 	go client.writePump()
 	go client.readPump()

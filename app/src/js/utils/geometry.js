@@ -1,4 +1,14 @@
 import curry from "./curry";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants";
+
+/**
+ * @typedef {Object} BoundingBox
+ * @property {number} x
+ * @property {number} y
+ * @property {number} width
+ * @property {number} height
+ *
+ */
 
 /**
  * @param  {...{x: number, y: number}} coordinates Objects containing x & y values
@@ -60,12 +70,19 @@ function withinBounds(boundingBox, subjectBoundingBox) {
 const curriedWithinBounds = curry(withinBounds);
 
 /**
- * @typedef {Object} BoundingBox
- * @property {number} x
- * @property {number} y
- * @property {number} width
- * @property {number} height
+ * Makes sure that the `subjectBoundingBox` is contained within
+ * current canvas width/height. If a too small/large x/y value is provided it
+ * calculates the closest x/y values.
  *
+ * @param {BoundingBox} subjectBoundingBox
+ * @returns {BoundingBox}
+ */
+const containCoordinatesWithinCanvas = curriedWithinBounds({
+  x: CANVAS_WIDTH,
+  y: CANVAS_HEIGHT,
+});
+
+/**
  * @returns {BoundingBox}
  */
 function boundingBox({ x = 0, y = 0, width = 1, height = 1 }) {
@@ -77,4 +94,4 @@ function boundingBox({ x = 0, y = 0, width = 1, height = 1 }) {
   };
 }
 
-export { boundingBox, sumCoordinates, withinBounds, curriedWithinBounds };
+export { boundingBox, sumCoordinates, containCoordinatesWithinCanvas };

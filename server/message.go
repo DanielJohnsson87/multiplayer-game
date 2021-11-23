@@ -52,7 +52,7 @@ func decodeMessage(c *Client, message string) (ClientMessage, error) {
 }
 
 func encodeMessage(message ClientMessage) string {
-	return fmt.Sprintf("%d,%d,%d,%d", message.data.bounds.x, message.data.bounds.y, message.data.bounds.w, message.data.bounds.h)
+	return fmt.Sprintf("%d,%d,%d,%d,%d", message.client.psudoId, message.data.bounds.x, message.data.bounds.y, message.data.bounds.w, message.data.bounds.h)
 }
 
 func explodeMessage(message string) []string {

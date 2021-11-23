@@ -1,5 +1,6 @@
 import network from "../game/network";
 import player from "../game/player/player";
+import opponents from "../game/opponents/opponents";
 import gameLoop from "../game/loop/gameLoop";
 
 function initUI() {
@@ -34,11 +35,14 @@ async function handleConnect() {
     status.innerHTML = "Status: Connected";
     network.subscribe("UI", logMessage);
     player.init();
+    opponents.init();
     gameLoop.start();
   } else {
     status.innerHTML = "Status: Couldn't connect";
     network.unsubscribe("UI");
+    network.unsubscribe("updateStore");
     player.destroy();
+    opponents.destroy();
     gameLoop.stop();
   }
 }
@@ -49,7 +53,9 @@ function handleDisconnect() {
   if (network.disconnect()) {
     status.innerHTML = "Status: Disconnected";
     network.unsubscribe("UI");
+    network.unsubscribe("updateStore");
     player.destroy();
+    opponents.destroy();
     gameLoop.stop();
   }
 }

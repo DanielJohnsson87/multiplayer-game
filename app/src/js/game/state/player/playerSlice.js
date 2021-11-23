@@ -1,15 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../../constants";
 import {
   boundingBox,
-  curriedWithinBounds,
+  containCoordinatesWithinCanvas,
   sumCoordinates,
 } from "../../../utils/geometry";
-
-const containCoordinatesWithinCanvas = curriedWithinBounds({
-  x: CANVAS_WIDTH,
-  y: CANVAS_HEIGHT,
-});
 
 const initialState = {
   boundingBox: boundingBox({ x: 0, y: 0, width: 40, height: 20 }),
