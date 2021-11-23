@@ -117,8 +117,9 @@ async function sendPositionToServer(boundingBox) {
     return null;
   }
 
-  // TODO some kind of player id needed.
-  network.message(`${boundingBox.x},${boundingBox.y}`);
+  network.message(
+    `${boundingBox.x},${boundingBox.y},${boundingBox.width},${boundingBox.height}`
+  );
 }
 
 const player = {
