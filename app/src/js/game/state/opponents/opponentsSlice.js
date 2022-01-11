@@ -1,10 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
-import {
-  boundingBox,
-  containCoordinatesWithinCanvas,
-} from "../../../utils/geometry";
 
 const initialState = {};
+
+// TODO remove redux and replace with a non redux solution.
 
 // Using Redux Toolkit, allows us to write mutating logic.
 // Immer is used under the hood....
@@ -17,13 +15,9 @@ export const opponentsSlice = createSlice({
     },
     moveOpponent: (state, { payload }) => {
       const { id, ...bounds } = decodeMessage(payload);
-      const containedBoundingBox = containCoordinatesWithinCanvas(
-        boundingBox(bounds)
-      );
-
       state[id] = {
         id,
-        ...containedBoundingBox,
+        ...bounds,
       };
     },
   },

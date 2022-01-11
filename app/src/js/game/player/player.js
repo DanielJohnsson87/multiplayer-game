@@ -1,12 +1,9 @@
-import { CANVAS_ID } from "../../constants";
 import gameLoop from "../loop/gameLoop";
-import { keyDown, keyUp } from "../state/player/controlsSlice";
-import { resetPlayerState } from "../state/player/playerSlice";
-import { store } from "../state/store";
-import CONTROLS from "./controls";
 import network from "../network";
-
-const PLAYER_NODE_ID = "player";
+import controls from "./controls";
+import Vector from "../../utils/vector";
+import geometry from "../../utils/geometry";
+import playerState from "../state/player";
 
 let lastSentBoundingBox = null;
 
@@ -16,22 +13,8 @@ let lastSentBoundingBox = null;
  */
 function init() {
   destroy();
-
-  const playerBoundingBox = store.getState()?.player?.boundingBox;
-  const playerNode = document.createElement("div");
-  const canvas = document.getElementById(CANVAS_ID);
-  const { x = 0, y = 0, width = 10, height = 10 } = playerBoundingBox || {};
-  playerNode.id = PLAYER_NODE_ID;
-  playerNode.style.position = "absolute";
-  playerNode.style.transform = `translate3d(${x}px), ${y}px, 0`;
-
-  playerNode.style.width = `${width}px`;
-  playerNode.style.height = `${height}px`;
-  playerNode.style.backgroundColor = "#333";
-
-  canvas.appendChild(playerNode);
-  setupControls();
-
+  playerState.init();
+  controls.init();
   gameLoop.subscribe("movePlayer", movePlayer);
 }
 
@@ -40,13 +23,7 @@ function init() {
  * @returns void
  */
 function destroy() {
-  const playerNode = document.getElementById(PLAYER_NODE_ID);
-
-  if (playerNode) {
-    playerNode.remove();
-  }
-
-  store.dispatch(resetPlayerState());
+  playerState.destroy();
   gameLoop.unsubscribe("movePlayer");
 }
 
@@ -55,62 +32,70 @@ function destroy() {
  * Should execute every game loop iteration.
  */
 function movePlayer() {
-  const controls = store.getState()?.controls;
-  // TODO maybe possible to create some kind of dictionary for faster lookups.
-  Object.entries(controls).forEach(fireControlActions);
+  const direction = playerState.getState().direction;
+  const newDirection = keysToDirection(controls.getKeys(), direction);
+  const accelerationVector = keysToAcceleration(
+    controls.getKeys(),
+    newDirection
+  );
+  playerState.rotate(newDirection);
 
-  const boundingBox = store.getState()?.player?.boundingBox;
-  const nothingToReportOrDraw =
-    !boundingBox || lastSentBoundingBox === boundingBox;
-
-  if (nothingToReportOrDraw) {
-    return;
+  if (accelerationVector) {
+    playerState.accelerate(accelerationVector);
   }
 
-  drawPlayer(PLAYER_NODE_ID, boundingBox);
-  sendPositionToServer(boundingBox);
-
-  lastSentBoundingBox = boundingBox;
-}
-
-// TODO this should probably move to some file that handles the drawing. And also use canvas.
-function drawPlayer(id, boundingBox) {
-  const playerNode = document.getElementById(id);
-  if (!playerNode) {
-    return;
-  }
-  const { x, y, width, height } = boundingBox || {};
-  playerNode.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-  playerNode.style.width = `${width}px`;
-  playerNode.style.height = `${height}px`;
-}
-
-function setupControls() {
-  document.addEventListener("keydown", handleKeyBoardActions);
-  document.addEventListener("keyup", handleKeyBoardActions);
-}
-
-function handleKeyBoardActions(event) {
-  const unmappedKey = !CONTROLS[event.key];
-
-  if (event.repeat || unmappedKey) {
-    return;
-  }
-
-  if (event.type === "keydown") {
-    store.dispatch(keyDown(event.key));
-  } else {
-    store.dispatch(keyUp(event.key));
+  const boundingBox = playerState.getState().boundingBox;
+  if (boundingBox !== lastSentBoundingBox) {
+    sendPositionToServer(boundingBox);
+    lastSentBoundingBox = boundingBox;
   }
 }
 
-function fireControlActions([key, active]) {
-  const control = CONTROLS[key];
-  if (!control || !active) {
-    return;
+/**
+ * Calculates new direction based on keyboard inputs.
+ *
+ * @param {object} keys
+ * @param {number} rotation
+ * @returns {number}
+ */
+function keysToDirection(keys, rotation) {
+  let direction = rotation;
+
+  if (keys["ArrowRight"]) {
+    direction = geometry.warp360(direction + 5);
   }
-  // Execute control action responsible for updating player position
-  control.action();
+
+  if (keys["ArrowLeft"]) {
+    direction = geometry.warp360(direction - 5);
+  }
+
+  return direction;
+}
+
+/**
+ * Calculates new acceleration based on keyboard inputs.
+ *
+ * @param {object} keys
+ * @param {number} rotation
+ * @returns {{x: number, y: number} | false}
+ */
+function keysToAcceleration(keys, rotation) {
+  let acc = null;
+  let finalRotation = rotation;
+
+  if (keys["ArrowUp"] || keys["ArrowDown"]) {
+    acc = new Vector(0, 0);
+  }
+
+  if (keys["ArrowUp"]) {
+    acc.add({ x: 0, y: 0.25 });
+  }
+
+  if (keys["ArrowDown"]) {
+    acc.add({ x: 0, y: -0.25 });
+  }
+
+  return acc ? acc.rotate(finalRotation) : false;
 }
 
 async function sendPositionToServer(boundingBox) {

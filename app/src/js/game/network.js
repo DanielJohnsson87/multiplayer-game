@@ -1,3 +1,5 @@
+import main from "./main";
+
 let socket = null;
 const subscribers = {};
 
@@ -16,6 +18,7 @@ async function connect(url) {
       socket = new WebSocket(url);
       socket.onopen = function () {
         resolve(true);
+        // TODO need some kind of keep alive here https://www.jstips.co/en/javascript/working-with-websocket-timeout/
       };
 
       socket.onmessage = function (event) {
@@ -50,15 +53,25 @@ function disconnect() {
  * @returns {boolean}
  */
 async function message(message) {
-  if (!socket) {
+  if (!socket || socket.readyState === 0) {
     console.warn("No active socket, can't send data");
     return false;
   }
+
+  if (socket.readyState > 1) {
+    console.warn(
+      `Socket is closed. Ready state: ${socket.readyState}, can't send data`
+    );
+    main.exitGame();
+    return false;
+  }
+
   try {
     socket.send(message);
     return true;
   } catch (err) {
     console.warn("Couldn't send message: ", err);
+    main.exitGame();
     return false;
   }
 }

@@ -11,32 +11,6 @@ import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants";
  */
 
 /**
- * @param  {...{x: number, y: number}} coordinates Objects containing x & y values
- * @returns
- */
-function sumCoordinates(...coordinates) {
-  if (!coordinates || coordinates.length < 1) {
-    return null;
-  }
-
-  if (coordinates.length === 1) {
-    return coordinates[0];
-  }
-
-  return coordinates.reduce(
-    (acc, coordinate) => {
-      const x = Number.isInteger(coordinate.x) ? coordinate.x : 0;
-      const y = Number.isInteger(coordinate.y) ? coordinate.y : 0;
-      return {
-        x: acc.x + x,
-        y: acc.y + y,
-      };
-    },
-    { x: 0, y: 0 }
-  );
-}
-
-/**
  * Makes sure that the `subjectBoundingBox` is contained within
  * `boundingBox`. If a too small/large x/y value is provided it
  * calculates the closest x/y values.
@@ -94,4 +68,22 @@ function boundingBox({ x = 0, y = 0, width = 1, height = 1 }) {
   };
 }
 
-export { boundingBox, sumCoordinates, containCoordinatesWithinCanvas };
+/**
+ * Constrain degrees to range 0..360 (e.g. for bearings); -1 => 359, 361 => 1.
+ *
+ * @private
+ * @param {number} degrees
+ * @returns {number} degrees within range 0..360.
+ */
+function warp360(degrees) {
+  if (0 <= degrees && degrees < 360) {
+    return degrees; // avoid rounding due to arithmetic ops if within range
+  }
+  return ((degrees % 360) + 360) % 360; // sawtooth wave p:360, a:360
+}
+
+export default {
+  boundingBox,
+  containCoordinatesWithinCanvas, // TODO we can probably remove this in the future.
+  warp360,
+};

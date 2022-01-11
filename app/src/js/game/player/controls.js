@@ -1,33 +1,52 @@
-import { keyDown, keyUp } from "../state/player/controlsSlice";
-import { move } from "../state/player/playerSlice";
-import { store } from "../state/store";
-
-const UP = { x: 0, y: -10 };
-const RIGHT = { x: 10, y: 0 };
-const DOWN = { x: 0, y: 10 };
-const LEFT = { x: -10, y: 0 };
-
-const CONTROLS = {
-  ArrowUp: {
-    action: function handleArrowUp() {
-      store.dispatch(move(UP));
-    },
-  },
-  ArrowRight: {
-    action: function handleArrowRight() {
-      store.dispatch(move(RIGHT));
-    },
-  },
-  ArrowDown: {
-    action: function handleArrowDown() {
-      store.dispatch(move(DOWN));
-    },
-  },
-  ArrowLeft: {
-    action: function handleArrowLeft() {
-      store.dispatch(move(LEFT));
-    },
-  },
+const keys = {
+  ArrowUp: false,
+  ArrowRight: false,
+  ArrowDown: false,
+  ArrowLeft: false,
 };
 
-export default CONTROLS;
+function init() {
+  document.addEventListener("keydown", handleKeyDown);
+  document.addEventListener("keyup", handleKeyUp);
+}
+
+function getKeys() {
+  return { ...keys };
+  // return Object.entries(keys).reduce((acc, [key, active]) => {
+  //   if (!active) {
+  //     return acc;
+  //   }
+  //   return [...acc, key];
+  // }, []);
+}
+
+function isKeyPressed() {
+  return Object.values(keys).reduce((acc, active) => {
+    if (active || acc) {
+      return true;
+    }
+    return false;
+  }, false);
+}
+
+function handleKeyDown(event) {
+  const unmappedKey = typeof keys[event.key] === "undefined";
+
+  if (event.repeat || unmappedKey) {
+    return;
+  }
+
+  keys[event.key] = true;
+}
+
+function handleKeyUp(event) {
+  const unmappedKey = typeof keys[event.key] === "undefined";
+
+  if (event.repeat || unmappedKey) {
+    return;
+  }
+
+  keys[event.key] = false;
+}
+
+export default { init, isKeyPressed, getKeys };

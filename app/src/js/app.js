@@ -1,7 +1,7 @@
+import main from "./game/main";
 import { initStore } from "./game/state/store";
-import initUI from "./UI";
 
 (function () {
   initStore();
-  initUI();
+  main.initUI();
 })();

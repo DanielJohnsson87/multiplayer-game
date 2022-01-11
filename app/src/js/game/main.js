@@ -1,7 +1,8 @@
-import network from "../game/network";
-import player from "../game/player/player";
-import opponents from "../game/opponents/opponents";
-import gameLoop from "../game/loop/gameLoop";
+import network from "./network";
+import player from "./player/player";
+import opponents from "./opponents/opponents";
+import gameLoop from "./loop/gameLoop";
+import canvas from "./canvas/canvas";
 
 function initUI() {
   const connectButton = document.getElementById("connect");
@@ -9,8 +10,10 @@ function initUI() {
   const sendButton = document.getElementById("send");
 
   connectButton.addEventListener("click", handleConnect);
-  disconnectButton.addEventListener("click", handleDisconnect);
+  disconnectButton.addEventListener("click", exitGame);
   sendButton.addEventListener("click", handleSendMessage);
+
+  canvas.init();
 }
 
 function logMessage(e) {
@@ -47,7 +50,7 @@ async function handleConnect() {
   }
 }
 
-function handleDisconnect() {
+function exitGame() {
   const status = document.getElementById("status");
 
   if (network.disconnect()) {
@@ -60,4 +63,7 @@ function handleDisconnect() {
   }
 }
 
-export default initUI;
+export default {
+  initUI,
+  exitGame,
+};
