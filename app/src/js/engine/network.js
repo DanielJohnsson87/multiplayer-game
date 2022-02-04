@@ -1,4 +1,4 @@
-import main from "./main";
+import main from "../game/main";
 
 let socket = null;
 const subscribers = {};
@@ -62,7 +62,7 @@ async function message(message) {
     console.warn(
       `Socket is closed. Ready state: ${socket.readyState}, can't send data`
     );
-    main.exitGame();
+    main.exitGame(); // TOOD remove dependency to main. Should be possible to register a on close callback
     return false;
   }
 
@@ -71,7 +71,7 @@ async function message(message) {
     return true;
   } catch (err) {
     console.warn("Couldn't send message: ", err);
-    main.exitGame();
+    main.exitGame(); // TOOD remove dependency to main. Should be possible to register a on close callback
     return false;
   }
 }

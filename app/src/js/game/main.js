@@ -1,8 +1,8 @@
-import network from "./network";
-import player from "./player/player";
-import opponents from "./opponents/opponents";
-import gameLoop from "./loop/gameLoop";
-import canvas from "./canvas/canvas";
+import engine from "../engine";
+import opponents from "./opponents";
+import Player from "../engine/objects/Player";
+
+const CANVAS_ID = "canvas";
 
 function initUI() {
   const connectButton = document.getElementById("connect");
@@ -13,7 +13,7 @@ function initUI() {
   disconnectButton.addEventListener("click", exitGame);
   sendButton.addEventListener("click", handleSendMessage);
 
-  canvas.init();
+  engine.canvas.init(CANVAS_ID);
 }
 
 function logMessage(e) {
@@ -25,28 +25,28 @@ function logMessage(e) {
 function handleSendMessage() {
   const serverMessage = document.getElementById("message");
 
-  network.message(serverMessage.value);
+  engine.network.message(serverMessage.value);
 }
 
 async function handleConnect() {
   const status = document.getElementById("status");
   const serverInput = document.getElementById("server");
 
-  const connected = await network.connect(serverInput.value);
+  const connected = await engine.network.connect(serverInput.value);
 
   if (connected) {
     status.innerHTML = "Status: Connected";
-    network.subscribe("UI", logMessage);
-    player.init();
+    engine.network.subscribe("UI", logMessage);
+    engine.init();
     opponents.init();
-    gameLoop.start();
+    const player = new Player({ x: 100, y: 100 }, "keyboard");
   } else {
     status.innerHTML = "Status: Couldn't connect";
-    network.unsubscribe("UI");
-    network.unsubscribe("updateStore");
-    player.destroy();
+    engine.network.unsubscribe("UI");
+    engine.network.unsubscribe("updateStore");
+    engine.destroy();
     opponents.destroy();
-    gameLoop.stop();
+    // TODO destroy player
   }
 }
 
@@ -55,11 +55,10 @@ function exitGame() {
 
   if (network.disconnect()) {
     status.innerHTML = "Status: Disconnected";
-    network.unsubscribe("UI");
-    network.unsubscribe("updateStore");
-    player.destroy();
+    engine.network.unsubscribe("UI");
+    engine.network.unsubscribe("updateStore");
+    engine.destroy();
     opponents.destroy();
-    gameLoop.stop();
   }
 }
 
