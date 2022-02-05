@@ -2,18 +2,21 @@ import Vector from "../../utils/vector";
 import Shape from "./Shape";
 import {
   collisionBallToBall,
+  collisionResolutionBallToBall,
   penetrationResolutionBallToBall,
 } from "../physics";
 
 const SHAPE_CIRCLE = "circle";
 
 class Circle extends Shape {
-  constructor(pos, ctx = null, options = {}) {
+  constructor(pos, options = {}) {
     super(pos, SHAPE_CIRCLE);
     this.radius = options.radius ? options.radius : 20;
     this.color = options.color ? options.color : "red";
     this.direction = options.direction ? options.direction : 0;
-    this.ctx = ctx;
+    this.velocity = options.velocity
+      ? new Vector(options.velocity.x, options.velocity.y)
+      : new Vector(0, 0);
   }
 
   draw() {
@@ -54,6 +57,18 @@ class Circle extends Shape {
     switch (shape.shape) {
       case SHAPE_CIRCLE:
         return penetrationResolutionBallToBall(this, shape);
+      default:
+        console.warn(
+          `${this.constuctor}.isCollidingWith no method to calculate collision with ${shape.shape}`
+        );
+        return false;
+    }
+  }
+
+  collisionResolution(shape) {
+    switch (shape.shape) {
+      case SHAPE_CIRCLE:
+        return collisionResolutionBallToBall(this, shape);
       default:
         console.warn(
           `${this.constuctor}.isCollidingWith no method to calculate collision with ${shape.shape}`

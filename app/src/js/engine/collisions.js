@@ -1,10 +1,8 @@
 import SpatialGrid from "../utils/SpatialGrid";
-import Vector from "../utils/vector";
 import engine from "./index";
 import loop from "./loop";
-import Circle from "./objects/Circle";
 
-let grid = new SpatialGrid(null, { cellSize: 25 });
+let grid = new SpatialGrid(null, { cellSize: 20 });
 let isDebug = false;
 let iterations = 0;
 
@@ -36,15 +34,10 @@ function collisionCheck() {
     return;
   }
 
-  const collisionPairs = findCollisions(possibleCollisions);
-
-  collisionPairs.forEach(([entity1, entity2]) => {
-    movePlayer(entity1.id, entity1.pos);
-    movePlayer(entity2.id, entity2.pos);
-  });
+  findAndHandleCollisions(possibleCollisions);
 }
 
-function findCollisions(possibleCollisions) {
+function findAndHandleCollisions(possibleCollisions) {
   let entity1,
     entity2 = null;
   let collisionPairs = [];
@@ -54,34 +47,27 @@ function findCollisions(possibleCollisions) {
   for (const players of possibleCollisions) {
     for (let i = 0; i + 1 < players.length; i++) {
       entity1 = players[i];
-      const shape1 = new Circle(entity1.pos, null, { radius: entity1.radius });
 
       for (let j = i + 1; j < players.length; j++) {
         iterations++;
         entity2 = players[j];
-        const shape2 = new Circle(entity2.pos, null, {
-          radius: entity2.radius,
-        });
 
-        if (shape1.isCollidingWith(shape2)) {
-          const penetrationResolution = shape1.penetrationResolution(shape2);
-          collisionPairs.push([
-            { id: entity1.id, pos: { ...penetrationResolution.entity1 } },
-            { id: entity2.id, pos: { ...penetrationResolution.entity2 } },
-          ]);
+        if (entity1.isCollidingWith(entity2)) {
+          const penetrationResolution = entity1.penetrationResolution(entity2);
+          const velocityResolution = entity1.collisionResolution(entity2);
+
+          entity1.move(penetrationResolution.entity1);
+          entity2.move(penetrationResolution.entity2);
+          entity1.setVelocity(velocityResolution.entity1);
+          entity2.setVelocity(velocityResolution.entity2);
+
+          collisionPairs.push([entity1, entity2]);
         }
       }
     }
   }
 
   return collisionPairs;
-}
-
-function movePlayer(id, pos) {
-  const state = engine.state.getState(id);
-  const newPos = new Vector(pos.x, pos.y);
-
-  engine.state.setState(id, { ...state, pos: newPos });
 }
 
 export default {

@@ -2,7 +2,6 @@ import Vector from "../../utils/vector";
 import geometry from "../../utils/geometry";
 import engine from "../index";
 
-// TODO global const or object attribute?
 const FRICTION = 0.025;
 
 let id = 0;
@@ -14,7 +13,7 @@ class Shape {
   constructor(pos, shape) {
     if (this.constructor === Shape) {
       throw new Error(
-        'Can\'t instantiate "abstract" class! The Shape class is meant to be extended.'
+        "Can't instantiate Shape class! The Shape class is meant to be extended."
       );
     }
 
@@ -23,11 +22,13 @@ class Shape {
         `Missing "pos" in constructor to class ${this.constructor}`
       );
     }
+
     if (!shape) {
       throw new Error(
         `Missing "shape" in constructor to class ${this.constructor}`
       );
     }
+
     id++; // TODO Find better way
     this.id = id;
     this.pos = new Vector(pos.x, pos.y);
@@ -69,6 +70,22 @@ class Shape {
    */
   rotate(rotation) {
     this.direction = geometry.warp360(rotation + this.direction);
+  }
+
+  /**
+   * Move the shape to a new position.
+   * @param {{x: number, y: number}} pos Position vector
+   */
+  move(pos) {
+    this.pos = new Vector(pos.x, pos.y);
+  }
+
+  /**
+   * Set a new velocity
+   * @param {{x: number, y: number}} velocity
+   */
+  setVelocity(velocity) {
+    this.velocity = new Vector(velocity.x, velocity.y);
   }
 
   tick = () => {

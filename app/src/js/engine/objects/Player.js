@@ -1,15 +1,16 @@
 import engine from "../index";
+import AI from "../adapters/AI";
 import Keyboard from "../adapters/Keyboard";
 import Vector from "../../utils/vector";
 import Circle from "./Circle";
 import { CANVAS_HEIGHT } from "../../constants";
 
 class Player extends Circle {
-  constructor(pos, adapter = "keyboard") {
-    super(pos);
+  constructor(pos, options = {}) {
+    super(pos, options);
     this.acceleration = 0.5;
     this.ctx = engine.canvas.getContext();
-    this.adapter = this._setupAdapter(adapter); // Could be control, network or perhaps AI?
+    this.adapter = this._setupAdapter(options.adapter); // Could be control, network or perhaps AI?
     this._subscribeToLoop();
   }
 
@@ -17,6 +18,8 @@ class Player extends Circle {
     switch (adapter) {
       case "keyboard":
         return new Keyboard();
+      case "ai":
+        return new AI();
       default:
         throw new Error("Player is missing a valid adapter");
     }
@@ -40,17 +43,13 @@ class Player extends Circle {
         }
       });
 
-      // Update state, probably only if the player is playing on this computer.
-      engine.state.setState(this.id, {
-        id: this.id,
-        direction: this.direction,
-        pos: new Vector(this.pos.x, this.pos.y),
-        velocity: new Vector(this.velocity.x, this.velocity.y),
-        radius: this.radius,
-      });
+      engine.state.setState(this.id, this);
 
       this.draw();
-      drawHelper(this, this.ctx);
+
+      if (this.adapter.type() === "keyboard") {
+        drawHelper(this, this.ctx);
+      }
     });
   }
 }

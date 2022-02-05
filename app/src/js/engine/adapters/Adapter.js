@@ -11,6 +11,10 @@ class Adapter {
   sampleActions() {
     return { ...this.actions };
   }
+
+  readAndClearActions() {
+    throw new Error("Method 'readAndClearActions()' must be implemented.");
+  }
 }
 
 export default Adapter;

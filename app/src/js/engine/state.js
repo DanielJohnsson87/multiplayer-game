@@ -13,7 +13,7 @@ function getState(id) {
 }
 
 function setState(id, payload) {
-  state[id] = { ...payload };
+  state[id] = payload;
   return state[id];
 }
 

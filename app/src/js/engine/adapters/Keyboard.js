@@ -109,6 +109,10 @@ class Keyboard extends Adapter {
     this.actions = [];
     return actions;
   }
+
+  type() {
+    return "keyboard";
+  }
 }
 
 export default Keyboard;

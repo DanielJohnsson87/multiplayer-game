@@ -1,7 +1,6 @@
 import engine from "../engine/index";
 import Vector from "../utils/vector";
-import Circle from "../engine/objects/Circle";
-
+import Player from "../engine/objects/Player";
 // This file will change a lot once we connect to the network. So probably not worth spedning too much time here
 
 function randomNumber(min, max) {
@@ -29,40 +28,15 @@ function createOpponents(num) {
   return opponents;
 }
 
-const initialState = createOpponents(10);
+const initialState = createOpponents(4);
 
 /**
  * Setup the opponents and everything related.
  * @returns void
  */
 function init() {
-  destroy();
-  // connectStoreToNetwork();
-  // const state = engine.state.getState();
-
   Object.values(initialState).forEach((opponent) => {
-    engine.state.setState(opponent.id, opponent);
-  });
-
-  engine.loop.subscribe("opponents", () => {
-    engine.canvas.draw((ctx) => drawOpponents(ctx));
-  });
-}
-
-function drawOpponents(ctx) {
-  const players = engine.state.getState();
-
-  Object.values(players).forEach((player) => {
-    if (player.id === 1) {
-      return;
-    }
-    const { pos, radius, direction } = player;
-    const circle = new Circle(pos, ctx, {
-      radius,
-      direction,
-      color: player.id === 1 ? "red" : "green",
-    });
-    circle.draw();
+    new Player(opponent.pos, { adapter: "ai" });
   });
 }
 
@@ -74,19 +48,7 @@ function destroy() {
   Object.values(initialState).forEach((opponent) => {
     engine.state.setState(opponent.id, null);
   });
-  // network.unsubscribe("updateStore");
-  // store.dispatch(resetOpponentsState());
-  // loop.unsubscribe("updateOpponentPositions");
 }
-
-/**
- * @returns {void}
- */
-// function connectStoreToNetwork() {
-//   network.subscribe("updateStore", (event) => {
-//     store.dispatch(moveOpponent(event.data));
-//   });
-// }
 
 const opponents = {
   init: init,

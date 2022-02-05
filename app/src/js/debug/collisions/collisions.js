@@ -1,25 +1,32 @@
 import Vector from "../../utils/vector";
 import engine from "../../engine/index";
-import opponents from "../../game/opponents/opponents";
 import Player from "../../engine/objects/Player";
-// const PLAYER_ID = 1;
 
-// const initialPlayerState = {
-//   id: 1,
-//   direction: 0,
-//   pos: new Vector(50, 20),
-//   velocity: new Vector(0, 0),
-//   radius: 20,
-// };
+function randomNumber(min, max) {
+  return Math.random() * (max - min) + min;
+}
+function randomPos() {
+  return new Vector(randomNumber(0, 550), randomNumber(0, 550));
+}
+
+function createOpponents(num) {
+  let opponents = [];
+  for (let i = 0; i < num; i++) {
+    opponents.push(randomPos());
+  }
+
+  return opponents;
+}
 
 (function () {
   engine.init();
   engine.canvas.init("canvas");
-  // opponents.init();
 
-  const player = new Player({ x: 100, y: 100 }, "keyboard");
+  new Player({ x: 100, y: 100 }, { adapter: "keyboard", color: "green" });
 
   engine.collisions.debug(true);
 
-  // engine.state.setState(PLAYER_ID, initialPlayerState);
+  createOpponents(1).forEach((pos) => {
+    new Player(pos, { adapter: "ai", color: "red" });
+  });
 })();
