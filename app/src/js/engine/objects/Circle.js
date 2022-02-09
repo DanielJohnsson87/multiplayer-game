@@ -10,13 +10,22 @@ const SHAPE_CIRCLE = "circle";
 
 class Circle extends Shape {
   constructor(pos, options = {}) {
-    super(pos, SHAPE_CIRCLE);
+    super(pos, { ...options, shape: SHAPE_CIRCLE });
     this.radius = options.radius ? options.radius : 20;
     this.color = options.color ? options.color : "red";
     this.direction = options.direction ? options.direction : 0;
+    this.elasticity =
+      typeof options.elasticity !== "undefined" ? options.elasticity : 1;
     this.velocity = options.velocity
       ? new Vector(options.velocity.x, options.velocity.y)
       : new Vector(0, 0);
+    this.mass = Math.pow(this.radius, 2);
+
+    if (this.mass === 0) {
+      this.inverseMass = 0;
+    } else {
+      this.inverseMass = 1 / this.mass;
+    }
   }
 
   draw() {

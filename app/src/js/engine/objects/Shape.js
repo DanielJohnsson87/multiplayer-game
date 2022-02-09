@@ -10,7 +10,7 @@ let id = 0;
  * All shapes should extend this class.
  */
 class Shape {
-  constructor(pos, shape) {
+  constructor(pos, options = {}) {
     if (this.constructor === Shape) {
       throw new Error(
         "Can't instantiate Shape class! The Shape class is meant to be extended."
@@ -23,9 +23,9 @@ class Shape {
       );
     }
 
-    if (!shape) {
+    if (!options.shape) {
       throw new Error(
-        `Missing "shape" in constructor to class ${this.constructor}`
+        `Missing "options.shape" in constructor to class ${this.constructor}`
       );
     }
 
@@ -34,8 +34,8 @@ class Shape {
     this.pos = new Vector(pos.x, pos.y);
     this.velocity = new Vector(0, 0);
     this.direction = 0;
-    this.acceleration = 1;
-    this.shape = shape;
+    this.acceleration = options.acceleration ? options.acceleration : 1;
+    this.shape = options.shape;
 
     this._tickSubscribeToLoop();
   }

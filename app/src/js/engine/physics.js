@@ -9,31 +9,34 @@ function collisionBallToBall(ball1, ball2) {
 function penetrationResolutionBallToBall(ball1, ball2) {
   const dist = ball1.pos.subtract(ball2.pos);
   const depth = ball1.radius + ball2.radius - dist.magnitude();
-  const resolution = dist.unit().multiply(depth / 2);
+  const resolution = dist
+    .unit()
+    .multiply(depth / (ball1.inverseMass + ball2.inverseMass));
 
   return {
-    entity1: ball1.pos.add(resolution),
-    entity2: ball2.pos.add(resolution.multiply(-1)),
+    entity1: ball1.pos.add(resolution.multiply(ball1.inverseMass)),
+    entity2: ball2.pos.add(resolution.multiply(-ball2.inverseMass)),
   };
 }
 
 function collisionResolutionBallToBall(ball1, ball2) {
-  // Collision normal vector
   const normal = ball1.pos.subtract(ball2.pos).unit();
-  // Relative velocity vector
-  const relativeVelocity = ball1.velocity.subtract(ball2.velocity);
-  // Separating velocity - relativeVelocity projected onto the collision normal vector
-  const separatingVelocity = Vector.dot(relativeVelocity, normal);
-  // The projection value after the collision (multiplied by -1)
-  const newSeparatingVelocity = -separatingVelocity;
-  // Collision normal vector with the magnitude of the newSeparatingVelocity
-  let separatingVelocityVector = normal.multiply(newSeparatingVelocity);
+  const relVel = ball1.velocity.subtract(ball2.velocity);
+  const sepVel = Vector.dot(relVel, normal);
+  const newSepVel = -sepVel * Math.min(ball1.elasticity, ball2.elasticity);
+
+  // The difference between the new and the original sep.velocity value
+  const vsepDiff = newSepVel - sepVel;
+
+  // Dividing the impulse value in the ration of the inverse masses
+  // and adding the impulse vector to the original vel. vectors
+  // according to their inverse mass
+  const impulse = vsepDiff / (ball1.inverseMass + ball2.inverseMass);
+  const impulseVec = normal.multiply(impulse);
 
   return {
-    // Adding the separating velocity vector to the original velocity vector
-    entity1: ball1.velocity.add(separatingVelocityVector),
-    // Adding its opposite to the other balls original velocity vector
-    entity2: ball2.velocity.add(separatingVelocityVector.multiply(-1)),
+    entity1: ball1.velocity.add(impulseVec.multiply(ball1.inverseMass)),
+    entity2: ball2.velocity.add(impulseVec.multiply(-ball2.inverseMass)),
   };
 }
 

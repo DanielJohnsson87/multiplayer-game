@@ -3,7 +3,7 @@ import engine from "../../engine/index";
 import Player from "../../engine/objects/Player";
 
 function randomNumber(min, max) {
-  return Math.random() * (max - min) + min;
+  return Math.round(Math.random() * (max - min) + min);
 }
 function randomPos() {
   return new Vector(randomNumber(0, 550), randomNumber(0, 550));
@@ -18,6 +18,8 @@ function createOpponents(num) {
   return opponents;
 }
 
+const sizes = [5, 10, 50, 75, 100];
+
 (function () {
   engine.init();
   engine.canvas.init("canvas");
@@ -26,7 +28,11 @@ function createOpponents(num) {
 
   engine.collisions.debug(true);
 
-  createOpponents(1).forEach((pos) => {
-    new Player(pos, { adapter: "ai", color: "red" });
+  createOpponents(4).forEach((pos) => {
+    new Player(pos, {
+      adapter: "ai",
+      color: "red",
+      radius: sizes[randomNumber(0, 4)],
+    });
   });
 })();

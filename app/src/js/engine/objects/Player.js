@@ -5,10 +5,14 @@ import Vector from "../../utils/vector";
 import Circle from "./Circle";
 import { CANVAS_HEIGHT } from "../../constants";
 
+const defaultArgs = {
+  acceleration: 0.15,
+  elasticity: 0.75,
+};
+
 class Player extends Circle {
   constructor(pos, options = {}) {
-    super(pos, options);
-    this.acceleration = 0.5;
+    super(pos, { ...defaultArgs, ...options });
     this.ctx = engine.canvas.getContext();
     this.adapter = this._setupAdapter(options.adapter); // Could be control, network or perhaps AI?
     this._subscribeToLoop();

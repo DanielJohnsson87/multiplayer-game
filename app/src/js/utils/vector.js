@@ -25,7 +25,7 @@ class Vector {
   }
 
   /**
-   * Get the magnitued of the vector
+   * Get the magnitude / length of the vector
    * @returns {number}
    */
   magnitude() {
