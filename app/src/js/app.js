@@ -1,7 +1,5 @@
-import { initStore } from "./game/state/store";
-import initUI from "./UI";
+import main from "./game/main";
 
 (function () {
-  initStore();
-  initUI();
+  main.initUI();
 })();

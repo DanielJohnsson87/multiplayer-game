@@ -6,6 +6,7 @@ let then = Date.now();
 let interval = 1000 / fps;
 let delta = 0;
 let stopLoop = false;
+let tick = 0;
 
 function loop() {
   if (stopLoop) {
@@ -17,6 +18,7 @@ function loop() {
   delta = now - then;
 
   if (delta > interval) {
+    tick++;
     // Just `then = now` is not enough.
     // Lets say we set fps at 10 which mean
     // each frame must take 100ms
@@ -30,7 +32,7 @@ function loop() {
     then = now - (delta % interval);
 
     Object.entries(subscribers).forEach(([id, callback]) => {
-      callback();
+      callback(tick);
     });
   }
 }
@@ -60,12 +62,10 @@ function unsubscribe(id) {
   delete subscribers[id];
 }
 
-const gameLoop = {
+export default {
   start,
   stop,
   subscribe,
   unsubscribe,
 };
-
-export default gameLoop;
 export { start, stop, subscribe, unsubscribe };

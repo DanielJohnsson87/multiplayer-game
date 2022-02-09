@@ -9,8 +9,8 @@ import (
 )
 
 type BoundingBox struct {
-	x int
-	y int
+	x float32
+	y float32
 	w int
 	h int
 }
@@ -20,13 +20,13 @@ func decodeMessage(c *Client, message string) (ClientMessage, error) {
 	messageParts := explodeMessage(message)
 	clientMessage := ClientMessage{}
 
-	x, err := strconv.Atoi(messageParts[0])
+	x, err := strconv.ParseFloat(messageParts[0], 32)
 	if err != nil {
 		log.Print("Error parsing player x: ", err)
 		return clientMessage, errors.New("error parsing player x")
 	}
 
-	y, err := strconv.Atoi(messageParts[1])
+	y, err := strconv.ParseFloat(messageParts[1], 32)
 	if err != nil {
 		log.Print("Error parsing player y: ", err)
 		return clientMessage, errors.New("error parsing player y")
@@ -45,14 +45,14 @@ func decodeMessage(c *Client, message string) (ClientMessage, error) {
 	}
 
 	clientMessage.client = c
-	clientMessage.data = PlayerState{bounds: BoundingBox{x: x, y: y, w: w, h: h}}
+	clientMessage.data = PlayerState{bounds: BoundingBox{x: float32(x), y: float32(y), w: w, h: h}}
 
 	return clientMessage, nil
 
 }
 
 func encodeMessage(message ClientMessage) string {
-	return fmt.Sprintf("%d,%d,%d,%d,%d", message.client.psudoId, message.data.bounds.x, message.data.bounds.y, message.data.bounds.w, message.data.bounds.h)
+	return fmt.Sprintf("%d,%f,%f,%d,%d", message.client.psudoId, message.data.bounds.x, message.data.bounds.y, message.data.bounds.w, message.data.bounds.h)
 }
 
 func explodeMessage(message string) []string {

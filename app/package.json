@@ -5,6 +5,7 @@
   "version": "1.0.0",
   "scripts": {
     "start": "yarn parcel src/index.html -p 9000",
+    "debugCollisions": "yarn parcel src/js/debug/collisions/index.html -p 9001",
     "build": "yarn parcel build"
   },
   "devDependencies": {
