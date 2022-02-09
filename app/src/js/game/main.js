@@ -39,7 +39,7 @@ async function handleConnect() {
     engine.network.subscribe("UI", logMessage);
     engine.init();
     opponents.init();
-    new Player({ x: 100, y: 100 }, { adapter: "keyboard" });
+    new Player({ x: 100, y: 100 }, { adapter: "keyboard", color: "green" });
   } else {
     status.innerHTML = "Status: Couldn't connect";
     engine.network.unsubscribe("UI");
