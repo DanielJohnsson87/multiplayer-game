@@ -20,6 +20,15 @@ My first backend proof of concept was build in Go, mostly because I wanted to tr
 - **Communication**: WebSockets 
 
 
+### Progress so far 👇
+
+https://user-images.githubusercontent.com/3289002/154287050-bb61a0de-911e-4aa9-b3a4-d1f53bdaab3b.mov
+ 
+- Collisions are working and objects can have different masses & elasticity.
+- Using a Spatial grid to greatly reduce number of collision checks.
+- Every object uses 2D vectors for properties like positions, velocity, acceleration etc.
+
+
 ### Worth looking in to
 - Switching to a node backend? Using something like this ? https://geckosio.github.io/
 - Node.js snapshot interpolation https://github.com/geckosio/snapshot-interpolation#readme
