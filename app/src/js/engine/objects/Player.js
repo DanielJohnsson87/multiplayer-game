@@ -4,16 +4,21 @@ import Keyboard from "../adapters/Keyboard";
 import Vector from "../../utils/vector";
 import Circle from "./Circle";
 import { CANVAS_HEIGHT } from "../../constants";
+import {
+  ACTION_MOVE_UP,
+  ACTION_MOVE_DOWN,
+  ACTION_ROTATE_RIGHT,
+  ACTION_ROTATE_LEFT,
+} from "../constants";
 
 const defaultArgs = {
-  acceleration: 0.15,
-  elasticity: 0.75,
+  acceleration: 0.35,
+  elasticity: 1,
 };
 
 class Player extends Circle {
   constructor(pos, options = {}) {
     super(pos, { ...defaultArgs, ...options });
-    this.ctx = engine.canvas.getContext();
     this.adapter = this._setupAdapter(options.adapter); // Could be control, network or perhaps AI?
     this._subscribeToLoop();
   }
@@ -57,12 +62,6 @@ class Player extends Circle {
     });
   }
 }
-
-// TODO duplicates
-const ACTION_MOVE_UP = "ACTION_MOVE_UP";
-const ACTION_MOVE_DOWN = "ACTION_MOVE_DOWN";
-const ACTION_ROTATE_RIGHT = "ACTION_ROTATE_RIGHT";
-const ACTION_ROTATE_LEFT = "ACTION_ROTATE_LEFT";
 
 // TODO reuse these
 function actionsToAcceleration(actions) {

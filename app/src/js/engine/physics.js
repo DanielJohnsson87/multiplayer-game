@@ -1,6 +1,6 @@
 import Vector from "../utils/vector";
 
-function collisionBallToBall(ball1, ball2) {
+function collisionDetectionBallToBall(ball1, ball2) {
   return (
     ball1.radius + ball2.radius >= ball2.pos.subtract(ball1.pos).magnitude()
   );
@@ -40,15 +40,73 @@ function collisionResolutionBallToBall(ball1, ball2) {
   };
 }
 
+function closestPointBallToWall(ball, wall) {
+  const ballToWallStart = wall.start.subtract(ball.pos);
+  if (Vector.dot(wall.unit(), ballToWallStart) > 0) {
+    return wall.start;
+  }
+
+  const wallEndToBall = ball.pos.subtract(wall.end);
+  if (Vector.dot(wall.unit(), wallEndToBall) > 0) {
+    return wall.end;
+  }
+
+  const closestDist = Vector.dot(wall.unit(), ballToWallStart);
+  const closestVect = wall.unit().multiply(closestDist);
+  return wall.start.subtract(closestVect);
+}
+
+function collisionDetectionBallToWall(ball, wall) {
+  const ballToClosest = closestPointBallToWall(ball, wall).subtract(ball.pos);
+  if (ballToClosest.magnitude() <= ball.radius + wall.width / 2) {
+    return true;
+  }
+}
+
+function penetrationResolutionBallToWall(ball, wall) {
+  let penVect = ball.pos.subtract(closestPointBallToWall(ball, wall));
+
+  return {
+    entity1: ball.pos.add(
+      penVect
+        .unit()
+        .multiply(ball.radius + wall.width / 2 - penVect.magnitude())
+    ),
+    entity2: null,
+  };
+}
+
+function collisionResolutionBallToWall(ball, wall) {
+  const normal = ball.pos.subtract(closestPointBallToWall(ball, wall)).unit();
+  const sepVel = Vector.dot(ball.velocity, normal);
+  const new_sepVel = -sepVel * Math.min(ball.elasticity, wall.elasticity);
+  const vsep_diff = sepVel - new_sepVel;
+
+  return {
+    entity1: ball.velocity.add(normal.multiply(-vsep_diff)),
+    entity2: null,
+  };
+}
+
 const physics = {
-  collisionBallToBall,
+  closestPointBallToWall,
+  collisionDetectionBallToBall,
+  collisionDetectionBallToWall,
+
   collisionResolutionBallToBall,
+  collisionResolutionBallToWall,
+
   penetrationResolutionBallToBall,
+  penetrationResolutionBallToWall,
 };
 
 export default physics;
 export {
-  collisionBallToBall,
+  closestPointBallToWall,
+  collisionDetectionBallToBall,
+  collisionDetectionBallToWall,
+  collisionResolutionBallToWall,
   collisionResolutionBallToBall,
   penetrationResolutionBallToBall,
+  penetrationResolutionBallToWall,
 };

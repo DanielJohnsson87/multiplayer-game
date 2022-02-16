@@ -1,12 +1,15 @@
+import engine from "..";
 import Vector from "../../utils/vector";
-import Shape from "./Shape";
+import { SHAPE_CIRCLE, SHAPE_WALL } from "../constants";
 import {
-  collisionBallToBall,
+  collisionDetectionBallToBall,
+  collisionDetectionBallToWall,
   collisionResolutionBallToBall,
+  collisionResolutionBallToWall,
   penetrationResolutionBallToBall,
+  penetrationResolutionBallToWall,
 } from "../physics";
-
-const SHAPE_CIRCLE = "circle";
+import Shape from "./Shape";
 
 class Circle extends Shape {
   constructor(pos, options = {}) {
@@ -31,29 +34,36 @@ class Circle extends Shape {
   draw() {
     const directionVector = new Vector(0, -1).rotate(this.direction);
 
-    this.ctx.beginPath();
-    this.ctx.arc(this.pos.x, this.pos.y, this.radius, 0, 2 * Math.PI);
-    this.ctx.strokeStyle = "black";
-    this.ctx.stroke();
-    this.ctx.fillStyle = this.color;
-    this.ctx.fill();
-    this.ctx.closePath();
+    engine.canvas.draw(() => {
+      this.ctx.beginPath();
+      this.ctx.lineWidth = 3;
+      this.ctx.arc(this.pos.x, this.pos.y, this.radius, 0, 2 * Math.PI);
+      this.ctx.strokeStyle = "black";
+      this.ctx.stroke();
+      this.ctx.fillStyle = this.color;
+      this.ctx.fill();
+      this.ctx.closePath();
 
-    this.ctx.beginPath();
-    this.ctx.moveTo(this.pos.x, this.pos.y);
-    this.ctx.lineTo(
-      this.pos.x + directionVector.x * this.radius,
-      this.pos.y + directionVector.y * this.radius
-    );
-    this.ctx.strokeStyle = "blue";
-    this.ctx.stroke();
-    this.ctx.closePath();
+      this.ctx.lineWidth = 2;
+      this.ctx.beginPath();
+      this.ctx.moveTo(this.pos.x, this.pos.y);
+      this.ctx.lineTo(
+        this.pos.x + directionVector.x * this.radius,
+        this.pos.y + directionVector.y * this.radius
+      );
+      this.ctx.strokeStyle = "black";
+      this.ctx.stroke();
+      this.ctx.closePath();
+      this.ctx.lineWidth = 1;
+    }, 100);
   }
 
   isCollidingWith(shape) {
     switch (shape.shape) {
       case SHAPE_CIRCLE:
-        return collisionBallToBall(this, shape);
+        return collisionDetectionBallToBall(this, shape);
+      case SHAPE_WALL:
+        return collisionDetectionBallToWall(this, shape);
       default:
         console.warn(
           `${this.constuctor}.isCollidingWith no method to calculate collision with ${shape.shape}`
@@ -66,6 +76,8 @@ class Circle extends Shape {
     switch (shape.shape) {
       case SHAPE_CIRCLE:
         return penetrationResolutionBallToBall(this, shape);
+      case SHAPE_WALL:
+        return penetrationResolutionBallToWall(this, shape);
       default:
         console.warn(
           `${this.constuctor}.isCollidingWith no method to calculate collision with ${shape.shape}`
@@ -78,6 +90,8 @@ class Circle extends Shape {
     switch (shape.shape) {
       case SHAPE_CIRCLE:
         return collisionResolutionBallToBall(this, shape);
+      case SHAPE_WALL:
+        return collisionResolutionBallToWall(this, shape);
       default:
         console.warn(
           `${this.constuctor}.isCollidingWith no method to calculate collision with ${shape.shape}`

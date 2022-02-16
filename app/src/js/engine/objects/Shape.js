@@ -36,6 +36,7 @@ class Shape {
     this.direction = 0;
     this.acceleration = options.acceleration ? options.acceleration : 1;
     this.shape = options.shape;
+    this.ctx = engine.canvas.getContext();
 
     this._tickSubscribeToLoop();
   }
