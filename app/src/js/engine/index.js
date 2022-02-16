@@ -3,6 +3,7 @@ import collisions from "./collisions";
 import loop from "./loop";
 import network from "./network";
 import state from "./state";
+import world from "./world";
 
 function init() {
   loop.start();
@@ -23,4 +24,5 @@ export default {
   loop,
   network,
   state, // Does state actually belong in the engine?
+  world,
 };

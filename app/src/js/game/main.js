@@ -1,7 +1,7 @@
 import engine from "../engine";
 import opponents from "./opponents";
 import Player from "../engine/objects/Player";
-
+import Wall from "../engine/objects/Wall";
 const CANVAS_ID = "canvas";
 
 function initUI() {
@@ -40,6 +40,14 @@ async function handleConnect() {
     engine.init();
     opponents.init();
     new Player({ x: 100, y: 100 }, { adapter: "keyboard", color: "green" });
+    // Left wall
+    new Wall({ x: 0, y: 0 }, { x: 0, y: CANVAS_HEIGHT });
+    // Right wall
+    new Wall({ x: CANVAS_WIDTH, y: 0 }, { x: CANVAS_WIDTH, y: CANVAS_HEIGHT });
+    // Top wall
+    new Wall({ x: 0, y: 0 }, { x: CANVAS_WIDTH, y: 0 });
+    // Bottom wall
+    new Wall({ x: 0, y: CANVAS_HEIGHT }, { x: CANVAS_WIDTH, y: CANVAS_HEIGHT });
   } else {
     status.innerHTML = "Status: Couldn't connect";
     engine.network.unsubscribe("UI");

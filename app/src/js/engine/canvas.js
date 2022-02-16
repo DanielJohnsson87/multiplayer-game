@@ -2,7 +2,7 @@ import loop from "./loop";
 
 let canvas = null;
 let ctx = null;
-let layers = []; // 0 = background, 1 = foreground
+let layers = {};
 
 function init(canvasId) {
   canvas = document.getElementById(canvasId);
@@ -18,14 +18,14 @@ function init(canvasId) {
 }
 
 function drawLayers() {
-  layers.forEach(drawLayer);
+  Object.values(layers).forEach(drawLayer);
 }
 
 function drawLayer(items) {
   items.forEach((drawCallback) => drawCallback(ctx));
 }
 function clearLayers() {
-  layers = [];
+  layers = {};
 }
 
 function draw(callback, layer = 1) {

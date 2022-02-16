@@ -1,4 +1,5 @@
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "../constants";
+import { SHAPE_CIRCLE, SHAPE_WALL } from "../engine/constants";
 
 const MIN_GRID_SIZE = 0; // x & y start at 0
 const MAX_GRID_WIDTH = CANVAS_WIDTH;
@@ -69,10 +70,7 @@ class SpatialGrid {
     this.grid = Array(this.collCount);
 
     shapes.forEach((shape) => {
-      const minX = shape.pos.x - shape.radius;
-      const minY = shape.pos.y - shape.radius;
-      const maxX = shape.pos.x + shape.radius;
-      const maxY = shape.pos.y + shape.radius;
+      const { minX, minY, maxX, maxY } = boundingBoxFromShape(shape);
 
       const { col: minCol, row: minRow } = this.positionToGrid({
         x: minX,
@@ -120,6 +118,27 @@ class SpatialGrid {
     const row = Math.floor((vector.y - MIN_GRID_SIZE) / this.cellSize);
 
     return { col, row };
+  }
+}
+
+function boundingBoxFromShape(shape) {
+  if (shape.shape === SHAPE_CIRCLE) {
+    return {
+      minX: shape.pos.x - shape.radius,
+      minY: shape.pos.y - shape.radius,
+      maxX: shape.pos.x + shape.radius,
+      maxY: shape.pos.y + shape.radius,
+    };
+  }
+
+  if (shape.shape === SHAPE_WALL) {
+    const halfWallWidth = shape.width / 2;
+    return {
+      minX: shape.start.x - halfWallWidth,
+      minY: shape.start.y - halfWallWidth,
+      maxX: shape.end.x + halfWallWidth,
+      maxY: shape.end.y + halfWallWidth,
+    };
   }
 }
 

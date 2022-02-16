@@ -1,10 +1,11 @@
 import Adapter from "./Adapter.js";
 import engine from "../index.js";
-
-const ACTION_MOVE_UP = "ACTION_MOVE_UP";
-const ACTION_MOVE_DOWN = "ACTION_MOVE_DOWN";
-const ACTION_ROTATE_RIGHT = "ACTION_ROTATE_RIGHT";
-const ACTION_ROTATE_LEFT = "ACTION_ROTATE_LEFT";
+import {
+  ACTION_MOVE_UP,
+  ACTION_MOVE_DOWN,
+  ACTION_ROTATE_RIGHT,
+  ACTION_ROTATE_LEFT,
+} from "../constants";
 
 class Keyboard extends Adapter {
   constructor() {
