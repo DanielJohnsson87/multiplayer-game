@@ -30,7 +30,7 @@ class Shape {
     }
 
     id++; // TODO Find better way
-    this.id = id;
+    this.id = `${options.shape}-${id}`;
     this.pos = new Vector(pos.x, pos.y);
     this.velocity = new Vector(0, 0);
     this.direction = 0;

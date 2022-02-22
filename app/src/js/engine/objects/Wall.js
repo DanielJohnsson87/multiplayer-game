@@ -7,7 +7,7 @@ let id = 0;
 class Wall {
   constructor(start, end) {
     id++; // TODO Find better way
-    this.id = id;
+    this.id = `wall-${id}`;
     this.start = new Vector(start.x, start.y);
     this.end = new Vector(end.x, end.y);
     this.elasticity = 2.5;
