@@ -5,6 +5,7 @@ import Player from "../../engine/objects/Player";
 import Wall from "../../engine/objects/Wall";
 import { closestPointBallToWall } from "../../engine/physics";
 import Vector from "../../utils/vector";
+import Ball from "../../game/objects/Ball";
 
 function randomNumber(min, max) {
   return Math.round(Math.random() * (max - min) + min);
@@ -41,7 +42,10 @@ let isDebugingClosestPoint = false;
 
   new Wall({ x: 100, y: 240 }, { x: 350, y: 240 });
 
-  new Player({ x: 35, y: 100 }, { adapter: "keyboard", color: "green" });
+  new Ball({ x: 30, y: 130 });
+
+  new Player({ x: 35, y: 150 }, { adapter: "keyboard", color: "green" });
+
   engine.collisions.debugGrid(isDebugingGrid);
   createOpponents(10).forEach((pos) => {
     new Player(pos, {
