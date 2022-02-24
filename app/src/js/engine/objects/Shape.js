@@ -30,8 +30,9 @@ class Shape {
     }
 
     id++; // TODO Find better way
-    this.id = id;
+    this.id = `${options.shape}-${id}`;
     this.pos = new Vector(pos.x, pos.y);
+    this.previousPos = new Vector(pos.x, pos.y);
     this.velocity = new Vector(0, 0);
     this.direction = 0;
     this.acceleration = options.acceleration ? options.acceleration : 1;
@@ -74,10 +75,11 @@ class Shape {
   }
 
   /**
-   * Move the shape to a new position.
+   * Move the shape to a new position and store it's previous position.
    * @param {{x: number, y: number}} pos Position vector
    */
   move(pos) {
+    this.previousPos = new Vector(this.pos.x, this.pos.y);
     this.pos = new Vector(pos.x, pos.y);
   }
 
@@ -96,10 +98,10 @@ class Shape {
     let newVelocity = this.velocity.multiply(1 - FRICTION);
 
     if (isLargeEnough) {
-      this.pos = new Vector(
-        this.pos.x + this.velocity.x,
-        this.pos.y + this.velocity.y
-      );
+      this.move({
+        x: this.pos.x + this.velocity.x,
+        y: this.pos.y + this.velocity.y,
+      });
     } else {
       this.velocity = new Vector(0, 0);
     }

@@ -14,6 +14,7 @@ import Shape from "./Shape";
 class Circle extends Shape {
   constructor(pos, options = {}) {
     super(pos, { ...options, shape: SHAPE_CIRCLE });
+    this.lineWidth = 3;
     this.radius = options.radius ? options.radius : 20;
     this.color = options.color ? options.color : "red";
     this.direction = options.direction ? options.direction : 0;
@@ -37,7 +38,13 @@ class Circle extends Shape {
     engine.canvas.draw(() => {
       this.ctx.beginPath();
       this.ctx.lineWidth = 3;
-      this.ctx.arc(this.pos.x, this.pos.y, this.radius, 0, 2 * Math.PI);
+      this.ctx.arc(
+        this.pos.x,
+        this.pos.y,
+        this.radius - this.lineWidth / 2,
+        0,
+        2 * Math.PI
+      );
       this.ctx.strokeStyle = "black";
       this.ctx.stroke();
       this.ctx.fillStyle = this.color;

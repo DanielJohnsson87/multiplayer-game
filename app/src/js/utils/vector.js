@@ -62,7 +62,7 @@ class Vector {
   /**
    * Subtract a vector
    *
-   * @param {Vecotr} vector
+   * @param {Vector} vector
    * @returns {Vector}
    */
   subtract(vector) {
@@ -82,6 +82,19 @@ class Vector {
     } else {
       return new Vector(this.x / this.magnitude(), this.y / this.magnitude());
     }
+  }
+
+  /**
+   * Linear interpolate the vector to another vector
+   * @param {Vector} vector
+   * @param {number} t
+   * @returns
+   */
+  lerp(vector, t) {
+    t = Math.min(t, 1);
+    const lerpX = (vector.x - this.x) * t;
+    const lerpY = (vector.y - this.y) * t;
+    return new Vector(this.x + lerpX, this.y + lerpY);
   }
 }
 
