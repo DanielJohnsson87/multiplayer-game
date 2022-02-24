@@ -12,7 +12,7 @@ import {
 } from "../constants";
 
 const defaultArgs = {
-  acceleration: 0.35,
+  acceleration: 10,
   elasticity: 1,
 };
 
@@ -35,11 +35,10 @@ class Player extends Circle {
   }
 
   _subscribeToLoop() {
-    engine.loop.subscribe(`player-${this.id}`, (tick) => {
+    engine.loop.subscribe(`player-${this.id}`, () => {
       this.adapter.readAndClearActions().forEach((tickActions) => {
         // TODO calculate interpolated value from tick action times
         const { tick, actions } = tickActions;
-        // console.log("### Action tick: ", tick, actions);
         const rotation = actionsToRotation(actions);
         const acceleration = actionsToAcceleration(actions);
 
@@ -101,7 +100,13 @@ function actionsToRotation(actions) {
 function drawHelper(player, ctx) {
   const directionVector = new Vector(0, -1).rotate(player.direction);
 
-  drawHelperVector(ctx, player.velocity.x, player.velocity.y, 10, "green");
+  drawHelperVector(
+    ctx,
+    player.velocity.x * engine.loop.deltaTime(),
+    player.velocity.y * engine.loop.deltaTime(),
+    10,
+    "green"
+  );
   drawHelperVector(ctx, directionVector.x, directionVector.y, 50, "black");
 
   ctx.beginPath();

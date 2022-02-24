@@ -80,11 +80,9 @@ class Keyboard extends Adapter {
   };
 
   _sampleActions() {
-    engine.loop.subscribe("keyboard", (tick) => {
-      // if (tick % 4 === 0) {
+    engine.loop.subscribe("keyboard", () => {
       if (Object.values(this._actionBuffer).length > 0) {
         const actionObject = {
-          tick,
           actions: Object.entries(this._actionBuffer).reduce(
             (acc, [action, time]) => {
               const now = new Date().getTime();
@@ -101,7 +99,6 @@ class Keyboard extends Adapter {
           this._actionBuffer[action] = new Date();
         });
       }
-      // }
     });
   }
 

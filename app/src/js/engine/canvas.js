@@ -10,11 +10,15 @@ function init(canvasId) {
 
   ctx = canvas.getContext("2d");
 
-  loop.subscribe("canvas", () => {
-    clearCanvas();
-    drawLayers();
-    clearLayers();
-  });
+  loop.subscribe(
+    "canvas",
+    () => {
+      clearCanvas();
+      drawLayers();
+      clearLayers();
+    },
+    Infinity
+  );
 }
 
 function drawLayers() {

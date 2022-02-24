@@ -6,13 +6,11 @@
   "scripts": {
     "start": "yarn parcel src/index.html -p 9000",
     "debugCollisions": "yarn parcel src/js/debug/collisions/index.html -p 9001",
+    "debugLoop": "yarn parcel src/js/debug/loop/index.html -p 9002",
     "build": "yarn parcel build"
   },
   "devDependencies": {
     "parcel": "latest",
     "prettier": "^2.4.1"
-  },
-  "dependencies": {
-    "@reduxjs/toolkit": "^1.6.2"
   }
 }

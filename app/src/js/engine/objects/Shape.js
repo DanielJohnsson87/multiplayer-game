@@ -91,20 +91,13 @@ class Shape {
     this.velocity = new Vector(velocity.x, velocity.y);
   }
 
-  tick = () => {
-    const isLargeEnough =
-      Math.abs(this.velocity.x) > 0.005 || Math.abs(this.velocity.y) > 0.005;
-
+  tick = (delta) => {
     let newVelocity = this.velocity.multiply(1 - FRICTION);
 
-    if (isLargeEnough) {
-      this.move({
-        x: this.pos.x + this.velocity.x,
-        y: this.pos.y + this.velocity.y,
-      });
-    } else {
-      this.velocity = new Vector(0, 0);
-    }
+    this.move({
+      x: this.pos.x + newVelocity.x * delta,
+      y: this.pos.y + newVelocity.y * delta,
+    });
 
     this.velocity = newVelocity;
   };
