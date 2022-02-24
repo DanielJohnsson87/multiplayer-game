@@ -5,10 +5,7 @@ let then = 0;
 let delta = 0;
 let stopLoop = false;
 let tick = 0;
-
 let fpsCap = 60;
-
-// let intervalCap = 1000 / fpsCap;
 
 function loop() {
   if (stopLoop) {
@@ -18,7 +15,6 @@ function loop() {
   let intervalCap = 1000 / fpsCap;
   if (intervalCap > Date.now() - then) {
     requestAnimationFrame(loop);
-    console.log("#capp not met", intervalCap, Date.now() - then);
     return;
   }
 
