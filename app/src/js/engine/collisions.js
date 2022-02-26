@@ -6,7 +6,7 @@ let grid = new SpatialGrid(null, { cellSize: 20 });
 let isDebugGrid = false;
 
 function init() {
-  loop.subscribe("collisions", collisionCheck);
+  loop.subscribe("collisions", collisionCheck, 1001);
 }
 
 function destroy() {
