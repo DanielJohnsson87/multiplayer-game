@@ -20,11 +20,13 @@ class Wall {
   }
 
   _subscribeToLoop() {
-    engine.loop.subscribe(`wall-${this.id}`, () => {
-      engine.canvas.draw(() => {
+    engine.canvas.draw(
+      `wall-${this.id}`,
+      () => {
         this.draw();
-      }, 1);
-    });
+      },
+      1
+    );
   }
 
   draw() {

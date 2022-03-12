@@ -47,13 +47,24 @@ let isDebugingClosestPoint = false;
   new Player({ x: 35, y: 150 }, { adapter: "keyboard", color: "green" });
 
   engine.collisions.debugGrid(isDebugingGrid);
-  createOpponents(10).forEach((pos) => {
-    new Player(pos, {
+  // createOpponents(1).forEach((pos) => {
+  //   new Player(pos, {
+  //     adapter: "ai",
+  //     color: "red",
+  //     radius: sizes[randomNumber(0, 6)],
+  //   });
+  // });
+
+  new Player(
+    { x: 20, y: 20 },
+    {
       adapter: "ai",
       color: "red",
-      radius: sizes[randomNumber(0, 6)],
-    });
-  });
+      radius: 20,
+      direction: 90,
+      velocity: new Vector(100, 0),
+    }
+  );
 
   const showGridButton = document.getElementById("showGrid");
   showGridButton.addEventListener("click", () => {
@@ -67,16 +78,12 @@ let isDebugingClosestPoint = false;
   showClosestPointToWalls.addEventListener("click", () => {
     isDebugingClosestPoint = !isDebugingClosestPoint;
     if (isDebugingClosestPoint) {
-      engine.loop.subscribe("drawClosestPointToWalls", () => {
-        engine.canvas.draw(drawClosestPointToWalls, 1);
-      });
-    } else {
-      engine.loop.unsubscribe("drawClosestPointToWalls");
+      engine.canvas.draw("drawClosestPointToWalls", drawClosestPointToWalls, 1);
     }
   });
 })();
 
-function drawClosestPointToWalls(ctx) {
+function drawClosestPointToWalls(_, ctx) {
   const worldObjects = engine.world.getObjects();
   const playersObject = engine.state.getState();
 

@@ -10,33 +10,34 @@ function init(canvasId) {
 
   ctx = canvas.getContext("2d");
 
-  loop.subscribe(
+  loop.draw(
     "canvas",
-    () => {
+    (interpolation) => {
       clearCanvas();
-      drawLayers();
-      clearLayers();
+      drawLayers(interpolation);
+      // clearLayers();
     },
     Infinity
   );
 }
 
-function drawLayers() {
-  Object.values(layers).forEach(drawLayer);
+function drawLayers(interpolation) {
+  Object.values(layers).forEach((items) => drawLayer(items, interpolation));
 }
 
-function drawLayer(items) {
-  items.forEach((drawCallback) => drawCallback(ctx));
-}
-function clearLayers() {
-  layers = {};
+function drawLayer(items, interpolation) {
+  items.forEach((callbackObj) => callbackObj.callback(interpolation, ctx));
 }
 
-function draw(callback, layer = 1) {
+// function clearLayers() {
+//   layers = {};
+// }
+
+function draw(id, callback, layer = 1) {
   if (!layers[layer]) {
     layers[layer] = [];
   }
-  layers[layer].push(callback);
+  layers[layer].push({ id, callback });
 }
 
 function getContext() {

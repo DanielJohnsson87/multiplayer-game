@@ -35,10 +35,9 @@ class Player extends Circle {
   }
 
   _subscribeToLoop() {
-    engine.loop.subscribe(`player-${this.id}`, () => {
+    engine.loop.update(`player-${this.id}`, (delta) => {
       this.adapter.readAndClearActions().forEach((tickActions) => {
-        // TODO calculate interpolated value from tick action times
-        const { tick, actions } = tickActions;
+        const { actions } = tickActions;
         const rotation = actionsToRotation(actions);
         const acceleration = actionsToAcceleration(actions);
 
@@ -53,11 +52,13 @@ class Player extends Circle {
 
       engine.state.setState(this.id, this);
 
-      this.draw();
-
       if (this.adapter.type() === "keyboard") {
         drawHelper(this, this.ctx);
       }
+    });
+
+    engine.canvas.draw(`player-${this.id}`, (interpolation) => {
+      this.draw(interpolation);
     });
   }
 }
@@ -71,11 +72,13 @@ function actionsToAcceleration(actions) {
   }
 
   if (actions[ACTION_MOVE_UP]) {
-    acc = acc.add({ x: 0, y: -1 });
+    const inputDelta = actions[ACTION_MOVE_UP];
+    acc = acc.add({ x: 0, y: -1 * inputDelta });
   }
 
   if (actions[ACTION_MOVE_DOWN]) {
-    acc = acc.add({ x: 0, y: 1 });
+    const inputDelta = actions[ACTION_MOVE_DOWN];
+    acc = acc.add({ x: 0, y: 1 * inputDelta });
   }
 
   return acc;
@@ -85,13 +88,13 @@ function actionsToRotation(actions) {
   let directionChange = 0;
 
   if (actions[ACTION_ROTATE_RIGHT]) {
-    directionChange = 7.5;
-    // directionChange = 15;
+    const inputDelta = actions[ACTION_ROTATE_RIGHT];
+    directionChange = 7.5 * inputDelta;
   }
 
   if (actions[ACTION_ROTATE_LEFT]) {
-    // directionChange = -15;
-    directionChange = -7.5;
+    const inputDelta = actions[ACTION_ROTATE_LEFT];
+    directionChange = -7.5 * inputDelta;
   }
 
   return directionChange;
@@ -102,8 +105,8 @@ function drawHelper(player, ctx) {
 
   drawHelperVector(
     ctx,
-    player.velocity.x * engine.loop.deltaTime(),
-    player.velocity.y * engine.loop.deltaTime(),
+    player.velocity.x * engine.loop._unsafeDeltaTime(),
+    player.velocity.y * engine.loop._unsafeDeltaTime(),
     10,
     "green"
   );

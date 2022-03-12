@@ -2,7 +2,7 @@ import Vector from "../../utils/vector";
 import geometry from "../../utils/geometry";
 import engine from "../index";
 
-const FRICTION = 0.025;
+const FRICTION = 0.2;
 
 let id = 0;
 
@@ -43,21 +43,18 @@ class Shape {
   }
 
   _tickSubscribeToLoop() {
-    engine.loop.subscribe(`shape-tick-${this.id}`, this.tick);
+    engine.loop.update(`shape-tick-${this.id}`, this.tick);
   }
 
   /**
    * Add acceleration vector to the shapes current velocity.
-   *
-   * Calculate acceleration for shape. .unit().multiply(x) is used
-   * to make sure that diagonal acceleration doesn't get a larger magnitude.
    *
    * @param {{x: number, y: number}} acc
    * @returns {x: number, y: number} Returns new velocity
    */
   accelerate(acc) {
     const v = new Vector(acc.x, acc.y)
-      .unit()
+      // .unit()
       .multiply(this.acceleration)
       .rotate(this.direction);
 
@@ -92,14 +89,13 @@ class Shape {
   }
 
   tick = (delta) => {
-    let newVelocity = this.velocity.multiply(1 - FRICTION);
+    this.velocity = this.velocity.multiply(1 - FRICTION * delta);
+    let movement = this.velocity.multiply(delta);
 
     this.move({
-      x: this.pos.x + newVelocity.x * delta,
-      y: this.pos.y + newVelocity.y * delta,
+      x: this.pos.x + movement.x,
+      y: this.pos.y + movement.y,
     });
-
-    this.velocity = newVelocity;
   };
 
   draw() {

@@ -17,25 +17,25 @@ import Vector from "../../utils/vector";
   // // Bottom wall
   new Wall({ x: 0, y: CANVAS_HEIGHT }, { x: CANVAS_WIDTH, y: CANVAS_HEIGHT });
 
-  new Wall({ x: 100, y: 240 }, { x: 350, y: 240 });
+  new Wall({ x: 300, y: 0 }, { x: 300, y: 240 });
 
   new Player({ x: 35, y: 150 }, { adapter: "keyboard", color: "green" });
 
   new Player(
-    { x: 20, y: 20 },
+    { x: 20, y: 30 },
     {
       adapter: "ai",
       color: "red",
       radius: 20,
       direction: 90,
-      velocity: new Vector(600, 0),
+      velocity: new Vector(110, 0),
     }
   );
 
   const setFpsButton = document.getElementById("setFps");
   setFpsButton.addEventListener("click", () => {
     const fps = document.getElementById("fps").value;
-    engine.loop.setFPSCap(parseInt(fps));
+    engine.loop.setMaxFps(parseInt(fps));
   });
 
   const startButton = document.getElementById("start");
@@ -43,8 +43,8 @@ import Vector from "../../utils/vector";
     engine.loop.start();
   });
 
-  const stepButton = document.getElementById("step");
-  stepButton.addEventListener("click", () => {
-    engine.loop.step();
+  const stopButton = document.getElementById("stop");
+  stopButton.addEventListener("click", () => {
+    engine.loop.stop();
   });
 })();
