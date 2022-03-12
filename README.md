@@ -27,6 +27,7 @@ https://user-images.githubusercontent.com/3289002/154287050-bb61a0de-911e-4aa9-b
 - Collisions are working and objects can have different masses & elasticity.
 - Using a Spatial grid to greatly reduce number of collision checks.
 - Every object uses 2D vectors for properties like positions, velocity, acceleration etc.
+- Framerate independence - Movement & physics should now behave pretty much the same no matter what framerate the game is running at.
 
 
 ### Worth looking in to
