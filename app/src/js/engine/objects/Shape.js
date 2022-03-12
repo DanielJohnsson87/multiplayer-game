@@ -2,7 +2,7 @@ import Vector from "../../utils/vector";
 import geometry from "../../utils/geometry";
 import engine from "../index";
 
-const FRICTION = 0.025;
+const FRICTION = 0.2;
 
 let id = 0;
 
@@ -43,21 +43,18 @@ class Shape {
   }
 
   _tickSubscribeToLoop() {
-    engine.loop.subscribe(`shape-tick-${this.id}`, this.tick);
+    engine.loop.update(`shape-tick-${this.id}`, this.tick);
   }
 
   /**
    * Add acceleration vector to the shapes current velocity.
-   *
-   * Calculate acceleration for shape. .unit().multiply(x) is used
-   * to make sure that diagonal acceleration doesn't get a larger magnitude.
    *
    * @param {{x: number, y: number}} acc
    * @returns {x: number, y: number} Returns new velocity
    */
   accelerate(acc) {
     const v = new Vector(acc.x, acc.y)
-      .unit()
+      // .unit()
       .multiply(this.acceleration)
       .rotate(this.direction);
 
@@ -91,22 +88,14 @@ class Shape {
     this.velocity = new Vector(velocity.x, velocity.y);
   }
 
-  tick = () => {
-    const isLargeEnough =
-      Math.abs(this.velocity.x) > 0.005 || Math.abs(this.velocity.y) > 0.005;
+  tick = (delta) => {
+    this.velocity = this.velocity.multiply(1 - FRICTION * delta);
+    let movement = this.velocity.multiply(delta);
 
-    let newVelocity = this.velocity.multiply(1 - FRICTION);
-
-    if (isLargeEnough) {
-      this.move({
-        x: this.pos.x + this.velocity.x,
-        y: this.pos.y + this.velocity.y,
-      });
-    } else {
-      this.velocity = new Vector(0, 0);
-    }
-
-    this.velocity = newVelocity;
+    this.move({
+      x: this.pos.x + movement.x,
+      y: this.pos.y + movement.y,
+    });
   };
 
   draw() {

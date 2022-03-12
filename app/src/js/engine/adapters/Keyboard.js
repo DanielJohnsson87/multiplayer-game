@@ -16,6 +16,7 @@ class Keyboard extends Adapter {
       ArrowDown: ACTION_MOVE_DOWN,
       ArrowLeft: ACTION_ROTATE_LEFT,
     };
+    this._inputSampleRate = 1000 / 30 / 1000; // 30hz
     this.actions = [];
     this._actionBuffer = {}; // TODO maybe we need the buffer when implementing the network part. Keeping it until then
     this._init();
@@ -29,7 +30,7 @@ class Keyboard extends Adapter {
 
   _destroy() {
     document.removeEventListener("keydown", this._handleKeyDown);
-    engine.loop.unsubscribe("keyboard");
+    engine.loop.unsubscribeFrom("update", "keyboard");
     document.removeEventListener("keyup", this._handleKeyUp);
   }
 
@@ -56,7 +57,7 @@ class Keyboard extends Adapter {
       return;
     }
 
-    this._actionBuffer[action] = new Date();
+    this._actionBuffer[action] = performance.now();
   };
 
   _handleKeyUp = (event) => {
@@ -71,41 +72,42 @@ class Keyboard extends Adapter {
     }
 
     if (this._actionBuffer[action]) {
-      // TODO tighten up here
       this._actionBuffer[action] =
-        new Date().getTime() - this._actionBuffer[action];
+        performance.now() - this._actionBuffer[action];
     }
 
     delete this._actionBuffer[action];
   };
 
   _sampleActions() {
-    engine.loop.subscribe("keyboard", (tick) => {
-      // if (tick % 4 === 0) {
-      if (Object.values(this._actionBuffer).length > 0) {
-        const actionObject = {
-          tick,
-          actions: Object.entries(this._actionBuffer).reduce(
-            (acc, [action, time]) => {
-              const now = new Date().getTime();
-              const duration =
-                time instanceof Date ? now - time.getTime() : time;
-              return { ...acc, [`${action}`]: duration };
-            },
-            {}
-          ),
-        };
-        this.actions.push(actionObject);
+    if (Object.values(this._actionBuffer).length > 0) {
+      const actionObject = {
+        actions: Object.entries(this._actionBuffer).reduce(
+          (acc, [action, time]) => {
+            const now = performance.now();
+            const duration = now - time;
+            return {
+              ...acc,
+              [`${action}`]: this.inputDelta(duration),
+            };
+          },
+          {}
+        ),
+      };
+      this.actions.push(actionObject);
 
-        Object.keys(this._actionBuffer).forEach((action) => {
-          this._actionBuffer[action] = new Date();
-        });
-      }
-      // }
-    });
+      Object.keys(this._actionBuffer).forEach((action) => {
+        this._actionBuffer[action] = performance.now();
+      });
+    }
+  }
+
+  inputDelta(duration) {
+    return duration / 1000 / this._inputSampleRate;
   }
 
   readAndClearActions() {
+    this._sampleActions();
     const actions = [...this.actions];
     this.actions = [];
     return actions;

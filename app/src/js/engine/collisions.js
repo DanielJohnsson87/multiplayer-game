@@ -6,15 +6,19 @@ let grid = new SpatialGrid(null, { cellSize: 20 });
 let isDebugGrid = false;
 
 function init() {
-  loop.subscribe("collisions", collisionCheck);
+  loop.update("collisions", collisionCheck, 1001);
 }
 
 function destroy() {
-  loop.unsubscribe("collisions");
+  loop.unsubscribeFrom("update", "collisions");
 }
 
 function debugGrid(enable) {
   isDebugGrid = enable;
+
+  if (isDebugGrid) {
+    engine.canvas.draw("grid", (_, ctx) => grid.draw(ctx), 0);
+  }
 }
 
 function collisionCheck() {
@@ -25,10 +29,6 @@ function collisionCheck() {
   // Using the SpatialGrid seems to on average remove up to ~97% (30-35 times faster) of the iterations needed in findCollisions.
   grid.populate([...players, ...worldObjects]);
   const possibleCollisions = grid.possibleCollisions();
-
-  if (isDebugGrid) {
-    engine.canvas.draw((ctx) => grid.draw(ctx), 0);
-  }
 
   if (!possibleCollisions || possibleCollisions.length < 0) {
     return;

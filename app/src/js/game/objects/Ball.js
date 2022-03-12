@@ -8,8 +8,8 @@ class Ball extends Circle {
     this._subscribeToLoop();
   }
   _subscribeToLoop() {
-    engine.loop.subscribe(`ball-${this.id}`, (tick) => {
-      this.draw();
+    engine.canvas.draw(`ball-${this.id}`, (interpolation) => {
+      this.draw(interpolation);
     });
   }
 }

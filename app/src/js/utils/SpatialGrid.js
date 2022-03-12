@@ -48,8 +48,6 @@ class SpatialGrid {
       ctx.strokeStyle = "blue";
       ctx.stroke();
       ctx.closePath();
-
-      // console.log(colls.length);
     }
     for (let coll = 0; coll < this.collCount; coll++) {
       const x = (coll + 1) * this.cellSize;
