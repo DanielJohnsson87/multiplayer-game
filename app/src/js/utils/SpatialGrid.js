@@ -8,6 +8,7 @@ const MAX_GRID_HEIGHT = CANVAS_HEIGHT;
 class SpatialGrid {
   constructor(shapes, options = {}) {
     this.cellSize = options.cellSize ? options.cellSize : 25;
+    this.scale = options.scale ? options.scale : 1;
     this.collCount = Math.floor(
       (MAX_GRID_WIDTH - MIN_GRID_SIZE) / this.cellSize
     );
@@ -17,7 +18,7 @@ class SpatialGrid {
     this.grid = Array(this.collCount);
 
     if (shapes) {
-      this.populate(shapes);
+      this.populate(shapes, this.scale);
     }
   }
 
@@ -64,11 +65,13 @@ class SpatialGrid {
     return this.grid;
   }
 
-  populate(shapes) {
+  // TODO add scale here to be able to model the gravity field of each shape?
+  // (Should be larger than the actual shape.)
+  populate(shapes, scale = 1) {
     this.grid = Array(this.collCount);
 
     shapes.forEach((shape) => {
-      const { minX, minY, maxX, maxY } = boundingBoxFromShape(shape);
+      const { minX, minY, maxX, maxY } = boundingBoxFromShape(shape, scale);
 
       const { col: minCol, row: minRow } = this.positionToGrid({
         x: minX,
@@ -94,8 +97,8 @@ class SpatialGrid {
     });
   }
 
-  possibleCollisions() {
-    let possibleCollisions = [];
+  populatedCells() {
+    let populatedCells = [];
 
     for (const row of this.grid) {
       if (!row || row.length < 1) {
@@ -103,12 +106,39 @@ class SpatialGrid {
       }
       for (const coll of row) {
         if (coll && coll.length > 1) {
-          possibleCollisions.push(coll);
+          populatedCells.push(coll);
         }
       }
     }
 
-    return possibleCollisions;
+    return populatedCells;
+  }
+
+  populatedCellsUnique() {
+    let map = {};
+
+    for (const cell of this.populatedCells()) {
+      const shapes = cell.filter((shape) => !shape.solid);
+      if (shapes.length <= 1) {
+        continue;
+      }
+
+      for (const shape of shapes) {
+        const id = shape.id;
+        if (!map[id]) {
+          map[id] = new Set();
+        }
+
+        for (const add of shapes) {
+          if (add.id === id) {
+            continue;
+          }
+          map[id].add(add);
+        }
+      }
+    }
+
+    return map;
   }
 
   positionToGrid(vector) {
@@ -119,18 +149,18 @@ class SpatialGrid {
   }
 }
 
-function boundingBoxFromShape(shape) {
+function boundingBoxFromShape(shape, scale = 1) {
   if (shape.shape === SHAPE_CIRCLE) {
     return {
-      minX: shape.pos.x - shape.radius,
-      minY: shape.pos.y - shape.radius,
-      maxX: shape.pos.x + shape.radius,
-      maxY: shape.pos.y + shape.radius,
+      minX: shape.pos.x - shape.radius * scale,
+      minY: shape.pos.y - shape.radius * scale,
+      maxX: shape.pos.x + shape.radius * scale,
+      maxY: shape.pos.y + shape.radius * scale,
     };
   }
 
   if (shape.shape === SHAPE_WALL) {
-    const halfWallWidth = shape.width / 2;
+    const halfWallWidth = (shape.width * scale) / 2;
     return {
       minX: shape.start.x - halfWallWidth,
       minY: shape.start.y - halfWallWidth,

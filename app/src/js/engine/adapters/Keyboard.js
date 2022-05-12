@@ -1,6 +1,8 @@
 import Adapter from "./Adapter.js";
 import engine from "../index.js";
 import {
+  ACTION_ATTRACT,
+  ACTION_REPELL,
   ACTION_MOVE_UP,
   ACTION_MOVE_DOWN,
   ACTION_ROTATE_RIGHT,
@@ -15,6 +17,8 @@ class Keyboard extends Adapter {
       ArrowRight: ACTION_ROTATE_RIGHT,
       ArrowDown: ACTION_MOVE_DOWN,
       ArrowLeft: ACTION_ROTATE_LEFT,
+      q: ACTION_ATTRACT,
+      w: ACTION_REPELL,
     };
     this._inputSampleRate = 1000 / 30 / 1000; // 30hz
     this.actions = [];

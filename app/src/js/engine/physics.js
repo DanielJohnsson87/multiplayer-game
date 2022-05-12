@@ -88,6 +88,13 @@ function collisionResolutionBallToWall(ball, wall) {
   };
 }
 
+function gravity(mass1, mass2, distance) {
+  const g = 10;
+  const force = g * ((mass1 * mass2) / Math.pow(distance, 2));
+  const attraction = force / mass2;
+  return attraction;
+}
+
 const physics = {
   closestPointBallToWall,
   collisionDetectionBallToBall,
@@ -95,6 +102,8 @@ const physics = {
 
   collisionResolutionBallToBall,
   collisionResolutionBallToWall,
+
+  gravity,
 
   penetrationResolutionBallToBall,
   penetrationResolutionBallToWall,
@@ -107,6 +116,7 @@ export {
   collisionDetectionBallToWall,
   collisionResolutionBallToWall,
   collisionResolutionBallToBall,
+  gravity,
   penetrationResolutionBallToBall,
   penetrationResolutionBallToWall,
 };

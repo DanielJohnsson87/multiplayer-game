@@ -1,5 +1,6 @@
 import canvas from "./canvas";
 import collisions from "./collisions";
+import gravity from "./gravity";
 import loop from "./loop";
 import network from "./network";
 import state from "./state";
@@ -18,6 +19,7 @@ function destroy() {
 export default {
   canvas,
   collisions,
+  gravity,
 
   destroy,
   init,
