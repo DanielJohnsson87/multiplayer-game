@@ -33,7 +33,7 @@ class Wall {
     this.ctx.beginPath();
     this.ctx.moveTo(this.start.x, this.start.y);
     this.ctx.lineTo(this.end.x, this.end.y);
-    this.ctx.strokeStyle = "orange";
+    this.ctx.strokeStyle = "#F9CB40";
     this.ctx.lineWidth = this.width;
     this.ctx.stroke();
     this.ctx.closePath();

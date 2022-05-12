@@ -1,4 +1,3 @@
-import engine from "..";
 import Vector from "../../utils/vector";
 import { SHAPE_CIRCLE, SHAPE_WALL } from "../constants";
 import {
@@ -16,7 +15,7 @@ class Circle extends Shape {
     super(pos, { ...options, shape: SHAPE_CIRCLE });
     this.lineWidth = 3;
     this.radius = options.radius ? options.radius : 20;
-    this.color = options.color ? options.color : "red";
+    this.color = options.color ? options.color : "#e9d8a6";
     this.direction = options.direction ? options.direction : 0;
     this.elasticity =
       typeof options.elasticity !== "undefined" ? options.elasticity : 1;
@@ -25,10 +24,14 @@ class Circle extends Shape {
       : new Vector(0, 0);
     this.mass = Math.pow(this.radius, 2);
 
-    if (this.mass === 0) {
+    this.setInverseMass(this.mass);
+  }
+
+  setInverseMass(mass) {
+    if (mass === 0) {
       this.inverseMass = 0;
     } else {
-      this.inverseMass = 1 / this.mass;
+      this.inverseMass = 1 / mass;
     }
   }
 
@@ -39,9 +42,7 @@ class Circle extends Shape {
       x: this.previousPos.x + (this.pos.x - this.previousPos.x) * interpolation,
       y: this.previousPos.y + (this.pos.y - this.previousPos.y) * interpolation,
     };
-    // const interpolatedX = boxLastPos + (boxPos - boxLastPos) * interp + "px"; // interpolate
 
-    // engine.canvas.draw(() => {
     this.ctx.beginPath();
     this.ctx.lineWidth = 3;
     this.ctx.arc(
@@ -51,7 +52,7 @@ class Circle extends Shape {
       0,
       2 * Math.PI
     );
-    this.ctx.strokeStyle = "black";
+    this.ctx.strokeStyle = this.color;
     this.ctx.stroke();
     this.ctx.fillStyle = this.color;
     this.ctx.fill();
@@ -64,11 +65,10 @@ class Circle extends Shape {
       interpolated.x + directionVector.x * this.radius,
       interpolated.y + directionVector.y * this.radius
     );
-    this.ctx.strokeStyle = "black";
+    this.ctx.strokeStyle = "#011638";
     this.ctx.stroke();
     this.ctx.closePath();
     this.ctx.lineWidth = 1;
-    // }, 100);
   }
 
   isCollidingWith(shape) {

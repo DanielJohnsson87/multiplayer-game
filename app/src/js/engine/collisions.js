@@ -28,7 +28,7 @@ function collisionCheck() {
 
   // Using the SpatialGrid seems to on average remove up to ~97% (30-35 times faster) of the iterations needed in findCollisions.
   grid.populate([...players, ...worldObjects]);
-  const possibleCollisions = grid.possibleCollisions();
+  const possibleCollisions = grid.populatedCells();
 
   if (!possibleCollisions || possibleCollisions.length < 0) {
     return;

@@ -11,7 +11,10 @@ function randomNumber(min, max) {
   return Math.round(Math.random() * (max - min) + min);
 }
 function randomPos() {
-  return new Vector(randomNumber(0, 550), randomNumber(0, 550));
+  return new Vector(
+    randomNumber(20, CANVAS_WIDTH - 20),
+    randomNumber(20, CANVAS_HEIGHT - 20)
+  );
 }
 
 function createOpponents(num) {
@@ -25,11 +28,13 @@ function createOpponents(num) {
 
 const sizes = [10, 10, 15, 15, 20, 25];
 let isDebugingGrid = false;
+let isDebugingGravityGrid = false;
 let isDebugingClosestPoint = false;
 
 (function () {
   engine.init();
   engine.canvas.init("canvas");
+  engine.gravity.init();
 
   // Left wall
   new Wall({ x: 0, y: 0 }, { x: 0, y: CANVAS_HEIGHT });
@@ -40,11 +45,11 @@ let isDebugingClosestPoint = false;
   // // Bottom wall
   new Wall({ x: 0, y: CANVAS_HEIGHT }, { x: CANVAS_WIDTH, y: CANVAS_HEIGHT });
 
-  new Wall({ x: 100, y: 240 }, { x: 350, y: 240 });
+  Array.from(Array(25).keys()).forEach(() => {
+    new Ball(randomPos());
+  });
 
-  new Ball({ x: 30, y: 130 });
-
-  new Player({ x: 35, y: 150 }, { adapter: "keyboard", color: "green" });
+  new Player({ x: 29, y: 50 }, { adapter: "keyboard", color: "#07A0C3" });
 
   engine.collisions.debugGrid(isDebugingGrid);
   // createOpponents(1).forEach((pos) => {
@@ -56,20 +61,36 @@ let isDebugingClosestPoint = false;
   // });
 
   new Player(
-    { x: 20, y: 20 },
+    { x: 100, y: 220 },
     {
       adapter: "ai",
-      color: "red",
+      color: "#FF715B",
       radius: 20,
-      direction: 90,
-      velocity: new Vector(100, 0),
+      direction: 180,
+      velocity: new Vector(0, 40),
     }
   );
 
+  new Player(
+    { x: 170, y: 360 },
+    {
+      adapter: "ai",
+      color: "#FF715B",
+      radius: 20,
+      direction: 0,
+      velocity: new Vector(0, -40),
+    }
+  );
   const showGridButton = document.getElementById("showGrid");
   showGridButton.addEventListener("click", () => {
     isDebugingGrid = !isDebugingGrid;
     engine.collisions.debugGrid(isDebugingGrid);
+  });
+
+  const showGravityGrid = document.getElementById("showGravityGrid");
+  showGravityGrid.addEventListener("click", () => {
+    isDebugingGravityGrid = !isDebugingGravityGrid;
+    engine.gravity.debugGrid(isDebugingGravityGrid);
   });
 
   const showClosestPointToWalls = document.getElementById(

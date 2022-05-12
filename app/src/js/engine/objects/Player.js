@@ -5,15 +5,19 @@ import Vector from "../../utils/vector";
 import Circle from "./Circle";
 import { CANVAS_HEIGHT } from "../../constants";
 import {
+  ACTION_ATTRACT,
+  ACTION_REPELL,
   ACTION_MOVE_UP,
   ACTION_MOVE_DOWN,
   ACTION_ROTATE_RIGHT,
   ACTION_ROTATE_LEFT,
+  GRAVITATATIONAL_RADIUS_FACTOR,
+  GRAVITATATIONAL_MASS_FACTOR,
 } from "../constants";
 
 const defaultArgs = {
-  acceleration: 10,
-  elasticity: 1,
+  acceleration: 5,
+  elasticity: 0.5,
 };
 
 class Player extends Circle {
@@ -21,6 +25,30 @@ class Player extends Circle {
     super(pos, { ...defaultArgs, ...options });
     this.adapter = this._setupAdapter(options.adapter); // Could be control, network or perhaps AI?
     this._subscribeToLoop();
+    this.initialMass = this.mass;
+    this.attraction = 0;
+  }
+
+  _setMass(mass) {
+    this.mass = mass;
+    this._setAttraction(mass);
+    this.setInverseMass(mass);
+  }
+
+  _restoreMass() {
+    this.mass = this.initialMass;
+    this._setAttraction(this.initialMass);
+    this.setInverseMass(this.initialMass);
+  }
+
+  _setAttraction(mass) {
+    if (mass === this.initialMass) {
+      this.attraction = 0;
+    } else if (mass > 0) {
+      this.attraction = 1;
+    } else {
+      this.attraction = -1;
+    }
   }
 
   _setupAdapter(adapter) {
@@ -36,17 +64,23 @@ class Player extends Circle {
 
   _subscribeToLoop() {
     engine.loop.update(`player-${this.id}`, (delta) => {
+      this._restoreMass();
       this.adapter.readAndClearActions().forEach((tickActions) => {
         const { actions } = tickActions;
         const rotation = actionsToRotation(actions);
         const acceleration = actionsToAcceleration(actions);
+        const mass = actionToAttraction(this.initialMass, actions);
 
-        if (acceleration) {
-          this.accelerate(acceleration);
+        if (mass) {
+          this._setMass(mass);
         }
 
         if (rotation) {
           this.rotate(rotation);
+        }
+
+        if (acceleration) {
+          this.accelerate(acceleration.rotate(this.direction));
         }
       });
 
@@ -58,9 +92,48 @@ class Player extends Circle {
     });
 
     engine.canvas.draw(`player-${this.id}`, (interpolation) => {
+      this.drawAttractionField(interpolation);
       this.draw(interpolation);
     });
   }
+
+  drawAttractionField(interpolation = 0) {
+    if (!this.attraction) {
+      return;
+    }
+
+    const interpolated = {
+      x: this.previousPos.x + (this.pos.x - this.previousPos.x) * interpolation,
+      y: this.previousPos.y + (this.pos.y - this.previousPos.y) * interpolation,
+    };
+    this.ctx.beginPath();
+
+    this.ctx.arc(
+      interpolated.x,
+      interpolated.y,
+      this.radius * GRAVITATATIONAL_RADIUS_FACTOR,
+      0,
+      2 * Math.PI
+    );
+    this.ctx.fillStyle =
+      this.attraction > 0 ? "rgba(0, 255, 0, 0.15)" : "rgba(255, 0, 0, 0.15)";
+    this.ctx.fill();
+    this.ctx.closePath();
+  }
+}
+
+function actionToAttraction(mass, actions) {
+  let alteredMass = 0;
+
+  if (actions[ACTION_ATTRACT]) {
+    alteredMass = mass * GRAVITATATIONAL_MASS_FACTOR;
+  }
+
+  if (actions[ACTION_REPELL]) {
+    alteredMass = mass * -GRAVITATATIONAL_MASS_FACTOR;
+  }
+
+  return alteredMass;
 }
 
 // TODO reuse these

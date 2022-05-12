@@ -6,7 +6,7 @@ let layers = {};
 
 function init(canvasId) {
   canvas = document.getElementById(canvasId);
-  canvas.style.background = "#999";
+  canvas.style.background = "#011638";
 
   ctx = canvas.getContext("2d");
 

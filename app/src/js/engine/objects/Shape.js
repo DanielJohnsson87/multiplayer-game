@@ -55,8 +55,8 @@ class Shape {
   accelerate(acc) {
     const v = new Vector(acc.x, acc.y)
       // .unit()
-      .multiply(this.acceleration)
-      .rotate(this.direction);
+      .multiply(this.acceleration);
+    // .rotate(this.direction);
 
     this.velocity = this.velocity.add(v);
   }

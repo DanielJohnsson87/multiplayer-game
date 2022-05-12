@@ -3,7 +3,7 @@ import engine from "../../engine";
 
 class Ball extends Circle {
   constructor(pos) {
-    super(pos, { elasticity: 1, radius: 10, color: "purple" });
+    super(pos, { elasticity: 1, radius: 10, color: "#F2F4FF" });
     engine.world.addObject(this);
     this._subscribeToLoop();
   }
