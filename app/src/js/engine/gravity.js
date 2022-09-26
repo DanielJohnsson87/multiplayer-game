@@ -24,7 +24,7 @@ function applyGravity() {
 
   const possibleCollisions = grid.populatedCellsUnique();
 
-  for (shape of [...players, ...worldObjects]) {
+  for (const shape of [...players, ...worldObjects]) {
     const attractedShapes = possibleCollisions[shape.id];
 
     if (!attractedShapes) {
