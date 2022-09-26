@@ -136,8 +136,8 @@ function start() {
   }
 
   isRunning = true;
-  now = Date.now();
-  then = Date.now();
+  // now = Date.now();
+  // then = Date.now();
 
   // Need to call requestAnimationFrame here to get the intial timestamp.
   // Otherwise calculations inside the loop will be off.
