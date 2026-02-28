@@ -12,7 +12,7 @@ const JOYSTICK_RADIUS = 55;
 const KNOB_RADIUS = 24;
 const JOYSTICK_DEAD_ZONE = 0.12;
 
-const BTN_RADIUS = 30;
+const BTN_RADIUS = 46;
 
 class Touch extends Adapter {
   constructor() {
@@ -30,8 +30,8 @@ class Touch extends Adapter {
 
     // Positions in canvas coordinates
     this._joystickCenter = { x: 130, y: 490 };
-    this._attractBtn = { x: 1100, y: 520 };
-    this._repelBtn = { x: 1030, y: 520 };
+    this._attractBtn = { x: 1110, y: 490 };
+    this._repelBtn = { x: 1000, y: 490 };
 
     this._canvas = null;
     this._init();
@@ -321,17 +321,17 @@ class Touch extends Adapter {
     ctx.beginPath();
     ctx.arc(center.x, center.y, BTN_RADIUS, 0, 2 * Math.PI);
     ctx.fillStyle = active
-      ? `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.35)`
-      : `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.08)`;
+      ? `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.4)`
+      : `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.15)`;
     ctx.fill();
-    ctx.strokeStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${active ? 0.7 : 0.25})`;
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${active ? 0.8 : 0.4})`;
+    ctx.lineWidth = 2;
     ctx.stroke();
 
-    ctx.font = "bold 11px 'Courier New', monospace";
+    ctx.font = "bold 14px 'Courier New', monospace";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${active ? 0.9 : 0.5})`;
+    ctx.fillStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${active ? 1.0 : 0.7})`;
     ctx.fillText(label, center.x, center.y);
   }
 }

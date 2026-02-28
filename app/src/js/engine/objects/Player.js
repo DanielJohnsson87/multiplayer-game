@@ -106,7 +106,8 @@ class Player extends Circle {
       y: this.previousPos.y + (this.pos.y - this.previousPos.y) * interpolation,
     };
 
-    if (this.adapter.type() === "keyboard") {
+    const adapterType = this.adapter.type();
+    if (adapterType === "keyboard" || adapterType === "touch") {
       this._drawSpaceship(interpolated);
     } else {
       this._drawEnemyShip(interpolated);
