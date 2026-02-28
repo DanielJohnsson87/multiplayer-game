@@ -11,6 +11,8 @@ import {
 const JOYSTICK_RADIUS = 55;
 const KNOB_RADIUS = 24;
 const JOYSTICK_DEAD_ZONE = 0.12;
+const THRUST_SCALE = 0.45;
+const ROTATION_SCALE = 0.5;
 
 const BTN_RADIUS = 46;
 
@@ -173,7 +175,7 @@ class Touch extends Adapter {
       // Thrust — push forward proportional to how far the stick is pushed
       const thrustMag =
         (magnitude - JOYSTICK_DEAD_ZONE) / (1 - JOYSTICK_DEAD_ZONE);
-      actions[ACTION_MOVE_UP] = thrustMag;
+      actions[ACTION_MOVE_UP] = thrustMag * THRUST_SCALE;
     } else {
       this._hasThrustInput = false;
       this._targetAngle = null;
@@ -201,7 +203,7 @@ class Touch extends Adapter {
       const absDiff = Math.abs(diff);
       if (absDiff > 2) {
         // Rotation speed scales with how far off we are, capped at 1.0
-        const rotMag = Math.min(absDiff / 45, 1.0);
+        const rotMag = Math.min(absDiff / 45, 1.0) * ROTATION_SCALE;
         if (diff > 0) {
           actions[ACTION_ROTATE_RIGHT] = rotMag;
         } else {
