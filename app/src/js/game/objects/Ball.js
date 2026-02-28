@@ -2,7 +2,7 @@ import Circle from "../../engine/objects/Circle";
 import { SHAPE_WALL } from "../../engine/constants";
 import engine from "../../engine";
 import Vector from "../../utils/vector";
-import { asteroidCollisionOutcome } from "./asteroidCollision";
+import { asteroidCollisionOutcome, ATTRACT_DURABILITY_MULTIPLIER } from "./asteroidCollision";
 
 const ASTEROID_COLORS = ["#8B7355", "#A0926B", "#7A6B52", "#9C8E74", "#6B5E47"];
 const MIN_BREAK_RADIUS = 6;
@@ -87,14 +87,22 @@ class Ball extends Circle {
     if (this._invulnerable > 0) return;
     if (other.shape === SHAPE_WALL) return;
 
-    // Non-asteroid collisions (player, etc.) always break
+    // Non-asteroid collisions (player, etc.) break — unless the player is attracting this asteroid
     if (!(other instanceof Ball)) {
+      if (engine.gravity.isAttracted(this.id) && other.attraction === 1) {
+        return;
+      }
       this._pendingBreak = true;
       return;
     }
 
-    const outcome = asteroidCollisionOutcome(this.mass, other.mass, relSpeed);
-    if (outcome === "break") {
+    // Two attracted asteroids can't break each other — they clump instead
+    const bothAttracted = engine.gravity.isAttracted(this.id)
+      && engine.gravity.isAttracted(other.id);
+
+    const durability = engine.gravity.isAttracted(this.id) ? ATTRACT_DURABILITY_MULTIPLIER : 1;
+    const outcome = asteroidCollisionOutcome(this.mass, other.mass, relSpeed, durability);
+    if (outcome === "break" && !bothAttracted) {
       this._pendingBreak = true;
     } else if (outcome === "absorb") {
       this._pendingAbsorb = other;

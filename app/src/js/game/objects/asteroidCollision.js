@@ -1,6 +1,7 @@
 // Tunable constants — adjust via playtesting
-export const BREAK_FORCE_PER_MASS = 30;
+export const BREAK_FORCE_PER_MASS = 80;
 export const ABSORB_MASS_RATIO = 3;
+export const ATTRACT_DURABILITY_MULTIPLIER = 4;
 
 /**
  * Determine the outcome of a collision for one asteroid.
@@ -11,10 +12,10 @@ export const ABSORB_MASS_RATIO = 3;
  * @param {number} relativeSpeed - Pre-collision closing speed along collision normal
  * @returns {'break' | 'absorb' | 'nothing'}
  */
-export function asteroidCollisionOutcome(selfMass, otherMass, relativeSpeed) {
+export function asteroidCollisionOutcome(selfMass, otherMass, relativeSpeed, durabilityMultiplier = 1) {
   const reducedMass = (selfMass * otherMass) / (selfMass + otherMass);
   const impactForce = relativeSpeed * reducedMass;
-  const breakThreshold = selfMass * BREAK_FORCE_PER_MASS;
+  const breakThreshold = selfMass * BREAK_FORCE_PER_MASS * durabilityMultiplier;
 
   if (impactForce > breakThreshold) return "break";
   if (selfMass > otherMass * ABSORB_MASS_RATIO) return "absorb";

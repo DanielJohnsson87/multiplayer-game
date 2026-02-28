@@ -1,14 +1,31 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   asteroidCollisionOutcome,
   BREAK_FORCE_PER_MASS,
   ABSORB_MASS_RATIO,
+  ATTRACT_DURABILITY_MULTIPLIER,
 } from "./asteroidCollision";
 
+vi.mock("../../engine", () => ({
+  default: {
+    world: { addObject: vi.fn(), removeObject: vi.fn() },
+    canvas: {
+      draw: vi.fn(),
+      removeDraw: vi.fn(),
+      getContext: vi.fn(() => ({})),
+    },
+    loop: { update: vi.fn(), unsubscribeFrom: vi.fn() },
+    gravity: { isAttracted: vi.fn(() => false) },
+  },
+}));
+
+import Ball from "./Ball";
+import engine from "../../engine";
+
 // Helper: minimum relSpeed for selfMass to break when colliding with otherMass
-function breakSpeed(selfMass, otherMass) {
+function breakSpeed(selfMass, otherMass, durabilityMultiplier = 1) {
   const reducedMass = (selfMass * otherMass) / (selfMass + otherMass);
-  return (selfMass * BREAK_FORCE_PER_MASS) / reducedMass;
+  return (selfMass * BREAK_FORCE_PER_MASS * durabilityMultiplier) / reducedMass;
 }
 
 describe("asteroidCollisionOutcome", () => {
@@ -94,6 +111,28 @@ describe("asteroidCollisionOutcome", () => {
     });
   });
 
+  describe("durability multiplier", () => {
+    it("collision that would break without multiplier returns nothing with multiplier", () => {
+      const mass = 400;
+      const speed = breakSpeed(mass, mass) * 1.1;
+      expect(asteroidCollisionOutcome(mass, mass, speed)).toBe("break");
+      expect(asteroidCollisionOutcome(mass, mass, speed, ATTRACT_DURABILITY_MULTIPLIER)).toBe("nothing");
+    });
+
+    it("multiplier does not affect absorption logic", () => {
+      const big = 400;
+      const small = 100;
+      const speed = breakSpeed(big, small) * 0.5;
+      expect(asteroidCollisionOutcome(big, small, speed, ATTRACT_DURABILITY_MULTIPLIER)).toBe("absorb");
+    });
+
+    it("extreme force still breaks even with multiplier", () => {
+      const mass = 400;
+      const speed = breakSpeed(mass, mass, ATTRACT_DURABILITY_MULTIPLIER) * 1.1;
+      expect(asteroidCollisionOutcome(mass, mass, speed, ATTRACT_DURABILITY_MULTIPLIER)).toBe("break");
+    });
+  });
+
   describe("edge cases", () => {
     it("zero relative speed returns nothing", () => {
       expect(asteroidCollisionOutcome(400, 400, 0)).toBe("nothing");
@@ -105,5 +144,61 @@ describe("asteroidCollisionOutcome", () => {
       const speed = breakSpeed(tiny, also_tiny) * 1.1;
       expect(asteroidCollisionOutcome(tiny, also_tiny, speed)).toBe("break");
     });
+  });
+});
+
+describe("Ball.onCollision — attract immunity", () => {
+  let asteroid;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    engine.gravity.isAttracted.mockReturnValue(false);
+    asteroid = new Ball({ x: 0, y: 0 }, { radius: 20 });
+  });
+
+  function fakePlayer(attraction = 0) {
+    return { shape: "player", attraction };
+  }
+
+  it("breaks when hitting a player normally", () => {
+    asteroid.onCollision(fakePlayer(0), { relSpeed: 100 });
+    expect(asteroid._pendingBreak).toBe(true);
+  });
+
+  it("does not break when attracted and hitting attracting player", () => {
+    engine.gravity.isAttracted.mockReturnValue(true);
+    asteroid.onCollision(fakePlayer(1), { relSpeed: 100 });
+    expect(asteroid._pendingBreak).toBe(false);
+  });
+
+  it("breaks when attracted and hitting repelling player", () => {
+    engine.gravity.isAttracted.mockReturnValue(true);
+    asteroid.onCollision(fakePlayer(-1), { relSpeed: 100 });
+    expect(asteroid._pendingBreak).toBe(true);
+  });
+
+  it("two attracted asteroids do not break each other", () => {
+    engine.gravity.isAttracted.mockReturnValue(true);
+    const other = new Ball({ x: 30, y: 0 }, { radius: 20 });
+    const speed = breakSpeed(asteroid.mass, other.mass) * 1.1;
+    asteroid.onCollision(other, { relSpeed: speed });
+    expect(asteroid._pendingBreak).toBe(false);
+  });
+
+  it("attracted asteroid gets durability boost against non-attracted asteroid", () => {
+    engine.gravity.isAttracted.mockImplementation((id) => id === asteroid.id);
+    const other = new Ball({ x: 30, y: 0 }, { radius: 20 });
+    // Speed that breaks normally but not with 4x durability
+    const speed = breakSpeed(asteroid.mass, other.mass) * 1.1;
+    asteroid.onCollision(other, { relSpeed: speed });
+    expect(asteroid._pendingBreak).toBe(false);
+  });
+
+  it("non-attracted asteroid breaks normally against attracted asteroid", () => {
+    const other = new Ball({ x: 30, y: 0 }, { radius: 20 });
+    engine.gravity.isAttracted.mockImplementation((id) => id === other.id);
+    const speed = breakSpeed(asteroid.mass, other.mass) * 1.1;
+    asteroid.onCollision(other, { relSpeed: speed });
+    expect(asteroid._pendingBreak).toBe(true);
   });
 });
