@@ -27,8 +27,11 @@ function createOpponents(num) {
 }
 
 const sizes = [10, 10, 15, 15, 20, 25];
-const isTouchDevice =
-  "ontouchstart" in window || navigator.maxTouchPoints > 0;
+// Detect touch: try multiple APIs, then fall back to runtime detection via overlay
+let isTouchDevice =
+  "ontouchstart" in window ||
+  navigator.maxTouchPoints > 0 ||
+  (/Macintosh/.test(navigator.userAgent) && "ontouchend" in document);
 let isDebugingGrid = false;
 let isDebugingGravityGrid = false;
 let isDebugingClosestPoint = false;
@@ -51,8 +54,19 @@ let isDebugingClosestPoint = false;
     new Ball(randomPos());
   });
 
-  const playerAdapter = isTouchDevice ? "touch" : "keyboard";
+  // Use URL param to force touch mode (set by runtime detection below)
+  const forceTouch = new URLSearchParams(window.location.search).has("touch");
+  const playerAdapter = isTouchDevice || forceTouch ? "touch" : "keyboard";
   new Player({ x: 29, y: 50 }, { adapter: playerAdapter, color: "#07A0C3" });
+
+  // Runtime fallback: if keyboard mode but user touches the screen, reload as touch
+  if (!isTouchDevice && !forceTouch) {
+    const canvas = document.getElementById("canvas");
+    canvas.addEventListener("touchstart", function switchToTouch() {
+      canvas.removeEventListener("touchstart", switchToTouch);
+      window.location.search = "?touch";
+    }, { once: true });
+  }
 
   engine.collisions.debugGrid(isDebugingGrid);
   // createOpponents(1).forEach((pos) => {

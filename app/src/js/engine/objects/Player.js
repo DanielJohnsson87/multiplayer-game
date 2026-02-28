@@ -206,26 +206,29 @@ class Player extends Circle {
     const fieldRadius = this.radius * GRAVITATATIONAL_RADIUS_FACTOR;
     const color = this.attraction > 0 ? [0, 255, 100] : [255, 50, 50];
 
-    // Pulsing ring effect
+    // Outer field glow
+    ctx.beginPath();
+    ctx.arc(interpolated.x, interpolated.y, fieldRadius, 0, 2 * Math.PI);
+    ctx.fillStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.12)`;
+    ctx.fill();
+    ctx.strokeStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.3)`;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.closePath();
+
+    // Pulsing rings
     const t = Date.now() * 0.003;
     for (let i = 3; i >= 0; i--) {
       const pulse = (t + i * 0.5) % 2;
       const ringR = fieldRadius * (0.3 + pulse * 0.35);
-      const alpha = 0.12 * (1 - pulse / 2);
+      const alpha = 0.25 * (1 - pulse / 2);
       ctx.beginPath();
       ctx.arc(interpolated.x, interpolated.y, ringR, 0, 2 * Math.PI);
       ctx.strokeStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${alpha})`;
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 2.5;
       ctx.stroke();
       ctx.closePath();
     }
-
-    // Outer field glow
-    ctx.beginPath();
-    ctx.arc(interpolated.x, interpolated.y, fieldRadius, 0, 2 * Math.PI);
-    ctx.fillStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.06)`;
-    ctx.fill();
-    ctx.closePath();
   }
 }
 

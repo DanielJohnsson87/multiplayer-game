@@ -1,7 +1,11 @@
 import Circle from "../../engine/objects/Circle";
+import { SHAPE_WALL } from "../../engine/constants";
 import engine from "../../engine";
+import Vector from "../../utils/vector";
 
 const ASTEROID_COLORS = ["#8B7355", "#A0926B", "#7A6B52", "#9C8E74", "#6B5E47"];
+const MIN_BREAK_RADIUS = 6;
+const CHILD_SCALE = 0.6;
 
 function seededRandom(seed) {
   let s = seed;
@@ -12,9 +16,13 @@ function seededRandom(seed) {
 }
 
 class Ball extends Circle {
-  constructor(pos) {
-    super(pos, { elasticity: 1, radius: 10, color: "#F2F4FF" });
+  constructor(pos, { radius = 20, velocity } = {}) {
+    super(pos, { elasticity: 1, radius, color: "#F2F4FF" });
     engine.world.addObject(this);
+
+    this._destroyed = false;
+    this._pendingBreak = false;
+    this._invulnerable = 0; // frames of invulnerability after spawning
 
     // Generate asteroid vertices once so shape is stable
     const rng = seededRandom(Math.floor(pos.x * 1000 + pos.y));
@@ -40,6 +48,10 @@ class Ball extends Circle {
     this.rotationSpeed = (rng() - 0.5) * 60; // degrees per second
     this.currentRotation = rng() * 360;
 
+    if (velocity) {
+      this.velocity = new Vector(velocity.x, velocity.y);
+    }
+
     this._subscribeToLoop();
   }
 
@@ -47,9 +59,74 @@ class Ball extends Circle {
     engine.canvas.draw(`ball-${this.id}`, (interpolation) => {
       this._drawAsteroid(interpolation);
     });
+    // Run after collisions (1001) to process breaks and tick invulnerability
+    engine.loop.update(`ball-break-${this.id}`, () => {
+      if (this._invulnerable > 0) this._invulnerable--;
+      if (this._pendingBreak) {
+        this._break();
+      }
+    }, 1002);
+  }
+
+  destroy() {
+    if (this._destroyed) return;
+    this._destroyed = true;
+    engine.world.removeObject(this.id);
+    engine.loop.unsubscribeFrom("update", `shape-tick-${this.id}`);
+    engine.loop.unsubscribeFrom("update", `ball-break-${this.id}`);
+    engine.canvas.removeDraw(`ball-${this.id}`);
+  }
+
+  onCollision(other) {
+    if (this._destroyed || this._pendingBreak) return;
+    if (this._invulnerable > 0) return;
+    if (other.shape === SHAPE_WALL) return;
+    this._pendingBreak = true;
+  }
+
+  _break() {
+    const childRadius = this.radius * CHILD_SCALE;
+
+    if (childRadius < MIN_BREAK_RADIUS) {
+      this.destroy();
+      return;
+    }
+
+    // Spawn 2 children offset perpendicular to velocity
+    const vel = this.velocity;
+    const perpendicular =
+      vel.magnitude() > 0.01
+        ? new Vector(-vel.y, vel.x).unit()
+        : new Vector(1, 0);
+
+    // Offset children far enough apart that they don't overlap
+    const offset = perpendicular.multiply(childRadius * 1.5);
+    const spread = perpendicular.multiply(40);
+
+    const child1 = new Ball(
+      { x: this.pos.x + offset.x, y: this.pos.y + offset.y },
+      {
+        radius: childRadius,
+        velocity: vel.add(spread),
+      }
+    );
+    child1._invulnerable = 30; // ~0.5s grace period
+
+    const child2 = new Ball(
+      { x: this.pos.x - offset.x, y: this.pos.y - offset.y },
+      {
+        radius: childRadius,
+        velocity: vel.subtract(spread),
+      }
+    );
+    child2._invulnerable = 30;
+
+    this.destroy();
   }
 
   _drawAsteroid(interpolation = 0) {
+    if (this._destroyed) return;
+
     const ctx = this.ctx;
     const r = this.radius;
 

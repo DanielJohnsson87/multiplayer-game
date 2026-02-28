@@ -88,6 +88,9 @@ function findAndHandleCollisions(possibleCollisions) {
             ...collisionMap[recievingEntity.id],
             [`${collidingEntity.id}`]: true,
           };
+
+          collidingEntity.onCollision?.(recievingEntity);
+          recievingEntity.onCollision?.(collidingEntity);
         }
       }
     }
