@@ -4,6 +4,15 @@ const subscribers = {
 };
 
 /**
+ * True while the loop is iterating over subscribers.
+ * Subscribes/unsubscribes are buffered during iteration.
+ */
+let isIterating = false;
+
+const pendingAdds = { update: [], draw: [] };
+const pendingRemoves = { update: new Set(), draw: new Set() };
+
+/**
  * Tracks the current frame about to be executed.
  */
 let frameId = 0;
@@ -68,6 +77,8 @@ function loop(now) {
 
   calculateFpsAverage(now);
 
+  isIterating = true;
+
   let numUpdateSteps = 0;
   while (delta >= timeStep) {
     // Bail of if we have a lot of time to simulate. Something went wrong. Don't crash the browser.
@@ -77,14 +88,20 @@ function loop(now) {
     }
 
     subscribers.update.forEach(({ id, callback }) => {
+      if (pendingRemoves.update.has(id)) return;
       callback(timeStep / 1000);
     });
     delta -= timeStep;
   }
 
   subscribers.draw.forEach(({ id, callback }) => {
+    if (pendingRemoves.draw.has(id)) return;
     callback(delta / timeStep);
   });
+
+  isIterating = false;
+  flushPending("update");
+  flushPending("draw");
 
   frameId = requestAnimationFrame(loop);
 }
@@ -124,6 +141,26 @@ function isAllowedPhase(phase) {
  */
 function panic() {
   delta = 0;
+}
+
+/**
+ * Apply buffered subscribes/unsubscribes for a phase.
+ * Called after iteration completes.
+ * @param {string} phase
+ */
+function flushPending(phase) {
+  if (pendingRemoves[phase].size > 0) {
+    subscribers[phase] = subscribers[phase].filter(
+      (s) => !pendingRemoves[phase].has(s.id)
+    );
+    pendingRemoves[phase].clear();
+  }
+
+  if (pendingAdds[phase].length > 0) {
+    subscribers[phase].push(...pendingAdds[phase]);
+    subscribers[phase].sort((a, b) => a.order - b.order);
+    pendingAdds[phase].length = 0;
+  }
 }
 
 /**
@@ -176,6 +213,11 @@ function subscribeTo(phase = "update", id, callback, order = 0) {
     return;
   }
 
+  if (isIterating) {
+    pendingAdds[phase].push({ id, callback, order });
+    return;
+  }
+
   subscribers[phase].push({ id, callback, order });
   subscribers[phase].sort((a, b) => a.order - b.order);
 }
@@ -186,6 +228,11 @@ function subscribeTo(phase = "update", id, callback, order = 0) {
  */
 function unsubscribeFrom(phase = "draw", id) {
   if (!isAllowedPhase(phase)) {
+    return;
+  }
+
+  if (isIterating) {
+    pendingRemoves[phase].add(id);
     return;
   }
 

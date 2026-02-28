@@ -33,6 +33,12 @@ All adapters must implement:
 - `type()` → returns string identifier ("keyboard", "ai", "touch")
 - The `delta` value is a normalized input intensity (keyboard uses time-based `inputDelta()` at 30Hz sample rate, touch uses joystick magnitude 0-1)
 
+## Performance
+- **Performance is critical** — 60fps game loop, every ms counts. Always consider frame budget impact when touching engine code.
+- **Mid-iteration mutation bug (fixed)**: subscribeTo/unsubscribeFrom used to mutate the subscribers array during forEach, causing skipped/double-fired callbacks and collision lag. Now buffered — see `loop.js`.
+- **Hot paths**: `loop()` subscriber iteration, collision detection, SpatialGrid lookups. Avoid allocations (objects, arrays, closures) in per-frame code.
+- Profile before/after when changing engine code. Test with many asteroids breaking simultaneously (worst case).
+
 ## Important Gotchas
 - **Player.draw() checks adapter type**: `_drawSpaceship()` for keyboard/touch, `_drawEnemyShip()` for AI. When adding new player-controlled adapters, update the condition in `Player.draw()` or the player will render as an enemy.
 - **Canvas dimensions are hardcoded** at 1200x600 in `constants.js` and used by SpatialGrid, wall setup, and debug helpers. For mobile, we CSS-scale the canvas rather than changing the game world — much less invasive.
