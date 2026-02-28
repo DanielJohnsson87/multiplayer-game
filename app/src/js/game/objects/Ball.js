@@ -2,6 +2,7 @@ import Circle from "../../engine/objects/Circle";
 import { SHAPE_WALL } from "../../engine/constants";
 import engine from "../../engine";
 import Vector from "../../utils/vector";
+import { asteroidCollisionOutcome } from "./asteroidCollision";
 
 const ASTEROID_COLORS = ["#8B7355", "#A0926B", "#7A6B52", "#9C8E74", "#6B5E47"];
 const MIN_BREAK_RADIUS = 6;
@@ -22,6 +23,7 @@ class Ball extends Circle {
 
     this._destroyed = false;
     this._pendingBreak = false;
+    this._pendingAbsorb = null; // reference to asteroid to absorb
     this._invulnerable = 0; // frames of invulnerability after spawning
 
     // Generate asteroid vertices once so shape is stable
@@ -59,11 +61,14 @@ class Ball extends Circle {
     engine.canvas.draw(`ball-${this.id}`, (interpolation) => {
       this._drawAsteroid(interpolation);
     });
-    // Run after collisions (1001) to process breaks and tick invulnerability
+    // Run after collisions (1001) to process breaks/absorption and tick invulnerability
     engine.loop.update(`ball-break-${this.id}`, () => {
       if (this._invulnerable > 0) this._invulnerable--;
       if (this._pendingBreak) {
         this._break();
+      } else if (this._pendingAbsorb) {
+        this._absorb(this._pendingAbsorb);
+        this._pendingAbsorb = null;
       }
     }, 1002);
   }
@@ -77,11 +82,23 @@ class Ball extends Circle {
     engine.canvas.removeDraw(`ball-${this.id}`);
   }
 
-  onCollision(other) {
+  onCollision(other, { relSpeed = 0 } = {}) {
     if (this._destroyed || this._pendingBreak) return;
     if (this._invulnerable > 0) return;
     if (other.shape === SHAPE_WALL) return;
-    this._pendingBreak = true;
+
+    // Non-asteroid collisions (player, etc.) always break
+    if (!(other instanceof Ball)) {
+      this._pendingBreak = true;
+      return;
+    }
+
+    const outcome = asteroidCollisionOutcome(this.mass, other.mass, relSpeed);
+    if (outcome === "break") {
+      this._pendingBreak = true;
+    } else if (outcome === "absorb") {
+      this._pendingAbsorb = other;
+    }
   }
 
   _break() {
@@ -122,6 +139,16 @@ class Ball extends Circle {
     child2._invulnerable = 30;
 
     this.destroy();
+  }
+
+  _absorb(other) {
+    if (other._destroyed) return;
+    // Grow: conserve total mass (area)
+    const newMass = this.mass + other.mass;
+    this.radius = Math.sqrt(newMass);
+    this.mass = newMass;
+    this.setInverseMass(newMass);
+    other.destroy();
   }
 
   _drawAsteroid(interpolation = 0) {

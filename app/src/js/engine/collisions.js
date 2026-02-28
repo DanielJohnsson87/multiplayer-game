@@ -1,4 +1,5 @@
 import SpatialGrid from "../utils/SpatialGrid";
+import Vector from "../utils/vector";
 import engine from "./index";
 import loop from "./loop";
 
@@ -65,6 +66,15 @@ function findAndHandleCollisions(possibleCollisions) {
           collidingEntity.isCollidingWith(recievingEntity) &&
           !collisionDetected
         ) {
+          // Compute closing speed along collision normal before resolution.
+          // Walls have no velocity/pos, so relSpeed is only meaningful for circle-circle.
+          let relSpeed = 0;
+          if (collidingEntity.velocity && recievingEntity.velocity) {
+            const relVel = collidingEntity.velocity.subtract(recievingEntity.velocity);
+            const normal = collidingEntity.pos.subtract(recievingEntity.pos).unit();
+            relSpeed = Math.abs(Vector.dot(relVel, normal));
+          }
+
           const penetrationResolution =
             collidingEntity.penetrationResolution(recievingEntity);
           const velocityResolution =
@@ -89,8 +99,9 @@ function findAndHandleCollisions(possibleCollisions) {
             [`${collidingEntity.id}`]: true,
           };
 
-          collidingEntity.onCollision?.(recievingEntity);
-          recievingEntity.onCollision?.(collidingEntity);
+          const collisionData = { relSpeed };
+          collidingEntity.onCollision?.(recievingEntity, collisionData);
+          recievingEntity.onCollision?.(collidingEntity, collisionData);
         }
       }
     }

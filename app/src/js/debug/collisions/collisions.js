@@ -27,11 +27,10 @@ function createOpponents(num) {
 }
 
 const sizes = [10, 10, 15, 15, 20, 25];
-// Detect touch: try multiple APIs, then fall back to runtime detection via overlay
-let isTouchDevice =
-  "ontouchstart" in window ||
-  navigator.maxTouchPoints > 0 ||
-  (/Macintosh/.test(navigator.userAgent) && "ontouchend" in document);
+// Detect touch: pointer:coarse means primary input is a finger (not a mouse/trackpad).
+// The old checks ("ontouchstart" in window, maxTouchPoints) give false positives on
+// desktop Chrome/Firefox which add touch APIs even without a touchscreen.
+let isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
 let isDebugingGrid = false;
 let isDebugingGravityGrid = false;
 let isDebugingClosestPoint = false;
