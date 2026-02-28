@@ -1,6 +1,7 @@
 import engine from "../index";
 import AI from "../adapters/AI";
 import Keyboard from "../adapters/Keyboard";
+import Touch from "../adapters/Touch";
 import Vector from "../../utils/vector";
 import Circle from "./Circle";
 import { CANVAS_HEIGHT } from "../../constants";
@@ -57,6 +58,8 @@ class Player extends Circle {
         return new Keyboard();
       case "ai":
         return new AI();
+      case "touch":
+        return new Touch();
       default:
         throw new Error("Player is missing a valid adapter");
     }

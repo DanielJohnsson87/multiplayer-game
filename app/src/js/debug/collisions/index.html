@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Asteroid Field</title>
     <script type="module" src="collisions.js"></script>
     <style>
@@ -16,6 +16,9 @@
             flex-direction: column;
             align-items: center;
             padding: 16px;
+            overflow: hidden;
+            -webkit-user-select: none;
+            user-select: none;
         }
         h1 {
             font-size: 14px;
@@ -46,6 +49,33 @@
         canvas {
             border: 1px solid rgba(14, 210, 255, 0.15);
             border-radius: 2px;
+            touch-action: none;
+        }
+        @media (max-width: 1250px) {
+            html { height: 100%; }
+            body {
+                height: 100dvh;
+                padding: 0;
+                justify-content: flex-start;
+                overflow: hidden;
+            }
+            h1 { display: none; }
+            .controls { display: none; }
+            .debug-buttons { display: none !important; }
+            canvas {
+                display: block;
+                width: 100vw !important;
+                height: 50vw !important;
+                max-height: 100dvh !important;
+                border: none !important;
+            }
+        }
+        @media (max-width: 1250px) and (orientation: landscape) {
+            canvas {
+                width: auto !important;
+                height: 100dvh !important;
+                max-width: 100vw !important;
+            }
         }
         .debug-buttons {
             display: flex;

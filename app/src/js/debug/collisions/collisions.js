@@ -27,6 +27,8 @@ function createOpponents(num) {
 }
 
 const sizes = [10, 10, 15, 15, 20, 25];
+const isTouchDevice =
+  "ontouchstart" in window || navigator.maxTouchPoints > 0;
 let isDebugingGrid = false;
 let isDebugingGravityGrid = false;
 let isDebugingClosestPoint = false;
@@ -49,7 +51,8 @@ let isDebugingClosestPoint = false;
     new Ball(randomPos());
   });
 
-  new Player({ x: 29, y: 50 }, { adapter: "keyboard", color: "#07A0C3" });
+  const playerAdapter = isTouchDevice ? "touch" : "keyboard";
+  new Player({ x: 29, y: 50 }, { adapter: playerAdapter, color: "#07A0C3" });
 
   engine.collisions.debugGrid(isDebugingGrid);
   // createOpponents(1).forEach((pos) => {
