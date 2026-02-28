@@ -10,43 +10,57 @@
 ## Project Structure (Frontend)
 - `app/src/js/engine/` — Core game engine (physics, collisions, gravity, game loop, canvas, input adapters)
 - `app/src/js/engine/objects/` — Shape (base), Circle, Wall, Player
+- `app/src/js/engine/adapters/` — Input adapters: Keyboard, AI, Touch
 - `app/src/js/utils/` — Vector math, geometry helpers, spatial grid
 - `app/src/js/game/` — Game-specific logic (Ball, opponents)
 - `app/src/js/debug/collisions/` — The working debug entry point
 - `app/src/js/constants.js` — Canvas dimensions (1200x600)
 
 ## Architecture Notes
-- **Rendering**: Canvas 2D context. `canvas.js` manages a layer system — call `engine.canvas.draw(id, callback, layer)` to register draw callbacks
+- **Rendering**: Canvas 2D context. `canvas.js` manages a layer system — call `engine.canvas.draw(id, callback, layer)` to register draw callbacks. Higher layer number = drawn later (on top). Use layer 999 for UI overlays.
 - **Game loop**: Fixed timestep update loop with interpolated rendering. `engine.loop.update()` for game logic, `engine.loop.draw()` for rendering
 - **Objects**: Shape > Circle > Player/Ball inheritance chain. All shapes get a canvas context via `engine.canvas.getContext()` stored as `this.ctx`
 - **Physics**: Circle-based collision detection. Visual shape can differ from collision shape (we changed visuals without touching physics)
-- **Input**: Adapter pattern — `Keyboard` and `AI` adapters. Player's adapter type determines behavior
+- **Input**: Adapter pattern — `Keyboard`, `AI`, and `Touch` adapters. Player's adapter type determines behavior and rendering
+- **State**: `engine.state.setState(id, playerObj)` stores Player references directly. `getState()` returns all players — useful for reading player direction from other systems (e.g., Touch adapter reads player.direction for rotation targeting)
 - **Vector**: Custom `Vector` class with `rotate(degrees)`, `add()`, `subtract()`, `multiply()`, `unit()`, `magnitude()`, `lerp()`
 - **Collision grid**: Spatial grid optimization in `utils/SpatialGrid.js`
-- **Gravity**: Objects have gravitational force proportional to mass. Player can attract (Q) or repel (W)
+- **Gravity**: Objects have gravitational force proportional to mass. Player can attract (Q key / ATR button) or repel (W key / REP button)
 
-## Changes Made This Session
-- **Space theme**: Replaced plain circle rendering with spaceship (player), enemy ships (AI), and jagged asteroids (balls)
-- **Starfield**: Added twinkling star background to `canvas.js` (150 stars, drawn before game layers)
-- **Attraction field**: Changed from static translucent circle to animated pulsing rings
-- **UI**: Rewrote `index.html` with space-themed dark UI, monospace font, cyan accents
+## Input Adapter Contract
+All adapters must implement:
+- `readAndClearActions()` → returns `[{ actions: { ACTION_NAME: delta } }]`
+- `type()` → returns string identifier ("keyboard", "ai", "touch")
+- The `delta` value is a normalized input intensity (keyboard uses time-based `inputDelta()` at 30Hz sample rate, touch uses joystick magnitude 0-1)
 
-## Key Files Modified
-- `app/src/js/engine/objects/Player.js` — Added `draw()` override, `_drawSpaceship()`, `_drawEnemyShip()`, updated `drawAttractionField()`
-- `app/src/js/game/objects/Ball.js` — Added asteroid rendering with seeded random vertices, craters, rotation
-- `app/src/js/engine/canvas.js` — Added starfield (generateStars/drawStars)
-- `app/src/js/debug/collisions/index.html` — Space-themed UI
+## Important Gotchas
+- **Player.draw() checks adapter type**: `_drawSpaceship()` for keyboard/touch, `_drawEnemyShip()` for AI. When adding new player-controlled adapters, update the condition in `Player.draw()` or the player will render as an enemy.
+- **Canvas dimensions are hardcoded** at 1200x600 in `constants.js` and used by SpatialGrid, wall setup, and debug helpers. For mobile, we CSS-scale the canvas rather than changing the game world — much less invasive.
+- **Touch coordinate mapping**: Mobile canvas is CSS-scaled, so touch events need `getBoundingClientRect()` + scale ratio conversion to map screen coords to canvas coords.
+- **Mobile viewport**: Browser toolbar eats into viewport height. Use `100dvh` (dynamic viewport height) not `100vh`. In landscape, constrain by height (`height: 100dvh; width: auto`). In portrait, constrain by width.
+- **Touch UI sizing**: Buttons need to be large for mobile (radius ~46px in canvas coords). Higher opacity (0.15 fill, 0.4 stroke for inactive state) needed for visibility on small screens.
+
+## Changes Made
+1. **Space theme** (commit `0e27586`): Spaceship player, enemy ships, jagged asteroids, twinkling starfield, space-themed UI
+2. **Touch controls** (commit `4d1f09e`): Single directional joystick (point to move), attract/repel buttons, auto-detect touch vs keyboard, responsive mobile CSS
+3. **Touch fixes** (commit `76e89a9`): Fixed spaceship rendering for touch adapter, enlarged action buttons
+
+## Key Files
+- `app/src/js/engine/objects/Player.js` — Ship rendering (`_drawSpaceship`, `_drawEnemyShip`), attraction field, adapter setup
+- `app/src/js/engine/adapters/Touch.js` — Touch controls with joystick + buttons, draws UI overlay
+- `app/src/js/game/objects/Ball.js` — Asteroid rendering with seeded vertices, craters, rotation
+- `app/src/js/engine/canvas.js` — Starfield background, layer system
+- `app/src/js/debug/collisions/collisions.js` — Scene setup, touch auto-detection
+- `app/src/js/debug/collisions/index.html` — Responsive mobile CSS, space-themed UI
 
 ## Useful Tools on This Machine
-- **Playwright** installed via npx with Chromium browser — can take headless screenshots: `npx playwright screenshot --browser chromium --wait-for-timeout 3000 --viewport-size "1250,750" "http://localhost:9001" /tmp/screenshot.png`
-- Python3 available for quick HTTP servers: `python3 -m http.server 8888 --bind 0.0.0.0`
-- Mac local IP: check with `ipconfig getifaddr en0`
+- **Playwright** installed via npx with Chromium — screenshots: `npx playwright screenshot --browser chromium --wait-for-timeout 3000 --viewport-size "1250,750" "http://localhost:9001" /tmp/screenshot.png`
+- Python3 for quick HTTP servers: `python3 -m http.server 8888 --bind 0.0.0.0`
+- Mac local IP: `ipconfig getifaddr en0` (currently `192.168.0.14`)
 
 ## Workflow Preferences
-- User works via remote control (phone) — can't easily open browser, so screenshots via Playwright are useful
+- User often works via remote control (phone) — can't easily open browser, so Playwright screenshots are useful
 - Can serve files on local network for phone viewing
 - Commit messages: short imperative style, matching existing repo conventions
 - Branch: `ai/experiment`
-
-## Pending / Uncommitted
-- The space theme changes are staged but NOT yet committed (user rejected the commit attempt — may want different message or to review first)
+- User prefers concise communication, no unnecessary questions — just propose options directly
