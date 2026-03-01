@@ -1,41 +1,39 @@
 import { createStore } from "./store";
 import { reducer } from "./reducer";
+import { createRenderer } from "./renderer";
 import loop from "./loop";
 import { SHAPE_CIRCLE, SHAPE_WALL } from "./constants";
 
 /**
  * Creates a game runner that orchestrates the store-based game loop.
  *
- * Replaces the old subscriber-based physics with a single STEP dispatch per frame.
- * Existing class instances are kept alive as "render shells" — their draw callbacks
- * stay registered, and state is synced from the store each frame.
+ * Dispatches a single STEP action per physics frame. Rendering is handled by
+ * a centralized renderer that reads directly from the store — no class
+ * instance sync bridge needed.
  *
  * @param {object} engine — the engine module (loop, world, canvas, etc.)
- * @param {object} options
- * @param {function} options.createBall — factory for render-only Ball instances:
- *   (pos, { radius, velocity, renderOnly }) => Ball instance
  * @returns {{ init, getState, getStore }}
  */
-export function createGameRunner(engine, { createBall } = {}) {
+export function createGameRunner(engine) {
   let store = null;
-  const adapters = new Map();   // playerId → adapter instance
-  const instances = new Map();  // store entityId → class instance (for render sync)
-  let previousEntityIds = null; // Set of IDs from last frame, for lifecycle detection
+  const adapters = new Map(); // playerId → adapter instance
 
   function init() {
     const worldObjects = engine.world.getObjects();
     const initialState = buildInitialState(worldObjects);
 
-    // Build adapter + instance maps
+    // Build adapter map
     for (const obj of worldObjects) {
-      instances.set(obj.id, obj);
       if (obj.adapter) {
         adapters.set(obj.id, obj.adapter);
       }
     }
 
     store = createStore(reducer, initialState);
-    previousEntityIds = new Set(Object.keys(initialState.entities));
+
+    // Register centralized renderer
+    const { render } = createRenderer(() => store.getState());
+    engine.canvas.draw("renderer", render, 1);
 
     // Unsubscribe the global physics callbacks (gravity + collisions systems)
     loop.unsubscribeFrom("update", "gravity");
@@ -43,10 +41,9 @@ export function createGameRunner(engine, { createBall } = {}) {
 
     // Subscribe the single game-step callback
     loop.update("game-step", (delta) => {
+      syncAdapterDirections();
       const inputs = gatherInputs();
       store.dispatch({ type: "STEP", delta, inputs });
-      syncToInstances();
-      handleEntityLifecycle();
     });
   }
 
@@ -62,6 +59,15 @@ export function createGameRunner(engine, { createBall } = {}) {
 
   // --- Internal helpers ---
 
+  function syncAdapterDirections() {
+    const state = store.getState();
+    for (const [playerId, adapter] of adapters) {
+      if (adapter.setDirection) {
+        adapter.setDirection(state.entities[playerId]?.direction ?? 0);
+      }
+    }
+  }
+
   function gatherInputs() {
     const inputs = [];
     for (const [playerId, adapter] of adapters) {
@@ -71,93 +77,6 @@ export function createGameRunner(engine, { createBall } = {}) {
       }
     }
     return inputs;
-  }
-
-  function syncToInstances() {
-    const state = store.getState();
-    for (const id in state.entities) {
-      const entity = state.entities[id];
-      const instance = instances.get(id);
-      if (!instance) continue;
-
-      if (entity.shape === SHAPE_CIRCLE) {
-        // Mutate Vector .x/.y in-place to avoid allocations
-        instance.pos.x = entity.pos.x;
-        instance.pos.y = entity.pos.y;
-        instance.previousPos.x = entity.previousPos.x;
-        instance.previousPos.y = entity.previousPos.y;
-        instance.velocity.x = entity.velocity.x;
-        instance.velocity.y = entity.velocity.y;
-        instance.direction = entity.direction;
-        instance.mass = entity.mass;
-        instance.inverseMass = entity.inverseMass;
-        instance.radius = entity.radius;
-
-        if (entity.type === "player") {
-          instance.attraction = entity.attraction;
-        }
-        if (entity.type === "ball") {
-          instance._invulnerable = entity.invulnerable;
-        }
-      }
-      // Walls don't move — no sync needed
-    }
-  }
-
-  function handleEntityLifecycle() {
-    const state = store.getState();
-
-    // Detect new entities (spawned by reducer, e.g. child asteroids)
-    if (createBall) {
-      for (const id in state.entities) {
-        if (!previousEntityIds.has(id)) {
-          const entity = state.entities[id];
-          if (entity.type === "ball") {
-            // Create a render-only Ball instance. Its internal ID differs from
-            // the store entity ID — the instances map bridges them.
-            const ball = createBall(entity.pos, {
-              radius: entity.radius,
-              velocity: entity.velocity,
-              renderOnly: true,
-            });
-            instances.set(id, ball);
-            // Sync initial state immediately so first draw is correct
-            syncBall(ball, entity);
-          }
-        }
-      }
-    }
-
-    // Detect removed entities
-    for (const id of previousEntityIds) {
-      if (!(id in state.entities)) {
-        const instance = instances.get(id);
-        if (instance && instance.destroy) {
-          instance.destroy();
-        }
-        instances.delete(id);
-        adapters.delete(id);
-      }
-    }
-
-    // Rebuild previousEntityIds — reuse the Set to reduce allocations
-    previousEntityIds.clear();
-    for (const id in state.entities) {
-      previousEntityIds.add(id);
-    }
-  }
-
-  function syncBall(instance, entity) {
-    instance.pos.x = entity.pos.x;
-    instance.pos.y = entity.pos.y;
-    instance.previousPos.x = entity.previousPos.x;
-    instance.previousPos.y = entity.previousPos.y;
-    instance.velocity.x = entity.velocity.x;
-    instance.velocity.y = entity.velocity.y;
-    instance.radius = entity.radius;
-    instance.mass = entity.mass;
-    instance.inverseMass = entity.inverseMass;
-    instance._invulnerable = entity.invulnerable;
   }
 }
 

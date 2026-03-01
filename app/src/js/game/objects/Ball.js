@@ -57,17 +57,10 @@ class Ball extends Circle {
 
     if (!renderOnly) {
       this._subscribeToLoop();
-    } else {
-      engine.canvas.draw(`ball-${this.id}`, (interpolation) => {
-        this._drawAsteroid(interpolation);
-      });
     }
   }
 
   _subscribeToLoop() {
-    engine.canvas.draw(`ball-${this.id}`, (interpolation) => {
-      this._drawAsteroid(interpolation);
-    });
     // Run after collisions (1001) to process breaks/absorption and tick invulnerability
     engine.loop.update(`ball-break-${this.id}`, () => {
       if (this._invulnerable > 0) this._invulnerable--;
@@ -88,7 +81,6 @@ class Ball extends Circle {
       engine.loop.unsubscribeFrom("update", `shape-tick-${this.id}`);
       engine.loop.unsubscribeFrom("update", `ball-break-${this.id}`);
     }
-    engine.canvas.removeDraw(`ball-${this.id}`);
   }
 
   onCollision(other, { relSpeed = 0 } = {}) {

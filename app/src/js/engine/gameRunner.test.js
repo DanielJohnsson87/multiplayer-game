@@ -187,9 +187,9 @@ describe("createGameRunner", () => {
     };
   });
 
-  async function createAndInit(options = {}) {
+  async function createAndInit() {
     const { createGameRunner } = await import("./gameRunner");
-    const runner = createGameRunner(engine, options);
+    const runner = createGameRunner(engine);
     runner.init();
     return runner;
   }
@@ -238,25 +238,6 @@ describe("createGameRunner", () => {
     expect(state.entities["player-1"].velocity.y).toBeLessThan(0);
   });
 
-  it("syncs state back to instances after dispatch", async () => {
-    await createAndInit();
-    getGameStep()(1 / 60);
-
-    // ball1 had velocity {60, 0} — after physics tick, pos.x should increase
-    expect(ball1.pos.x).toBeGreaterThan(100);
-  });
-
-  it("syncs player attraction to instance", async () => {
-    player1.adapter.readAndClearActions.mockReturnValue([
-      { actions: { [ACTION_ATTRACT]: 1.0 } },
-    ]);
-
-    await createAndInit();
-    getGameStep()(1 / 60);
-
-    expect(player1.attraction).toBe(1);
-  });
-
   it("handles entity destruction", async () => {
     const runner = await createAndInit();
 
@@ -278,67 +259,6 @@ describe("createGameRunner", () => {
     expect(stateAfterDestroy.entities["ball-2"]).toBeUndefined();
   });
 
-  it("creates ball instances for new entities via createBall factory", async () => {
-    const mockBall = {
-      pos: { x: 0, y: 0 },
-      previousPos: { x: 0, y: 0 },
-      velocity: { x: 0, y: 0 },
-      radius: 10,
-      mass: 100,
-      inverseMass: 0.01,
-      _invulnerable: 0,
-      destroy: vi.fn(),
-    };
-    const createBall = vi.fn().mockReturnValue(mockBall);
-
-    const runner = await createAndInit({ createBall });
-
-    // Spawn a new ball entity via the store
-    runner.getStore().dispatch({
-      type: "ENTITY_SPAWN",
-      entity: {
-        id: "ball-new",
-        type: "ball",
-        shape: SHAPE_CIRCLE,
-        pos: { x: 200, y: 200 },
-        previousPos: { x: 200, y: 200 },
-        velocity: { x: 10, y: 0 },
-        direction: 0,
-        acceleration: 1,
-        radius: 12,
-        mass: 144,
-        inverseMass: 1 / 144,
-        elasticity: 1,
-        invulnerable: 30,
-        solid: false,
-      },
-    });
-
-    // Trigger lifecycle
-    getGameStep()(1 / 60);
-
-    expect(createBall).toHaveBeenCalledWith(
-      expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) }),
-      expect.objectContaining({ renderOnly: true })
-    );
-  });
-
-  it("cleans up destroyed instance on lifecycle check", async () => {
-    const destroySpy = vi.fn();
-    ball2.destroy = destroySpy;
-
-    const runner = await createAndInit();
-
-    // Remove ball-2 from state
-    runner.getStore().dispatch({
-      type: "ENTITY_DESTROY",
-      entityId: "ball-2",
-    });
-
-    getGameStep()(1 / 60);
-
-    expect(destroySpy).toHaveBeenCalled();
-  });
 });
 
 // --- Reducer mass reset fix verification ---

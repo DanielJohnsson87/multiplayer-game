@@ -23,6 +23,9 @@ class Touch extends Adapter {
     this.actions = [];
     this._actionBuffer = {};
 
+    // Current player direction (synced from store via setDirection)
+    this._currentDirection = 0;
+
     // Single joystick + two action buttons
     this._joystick = { touchId: null, dx: 0, dy: 0 };
     this._attractActive = false;
@@ -183,15 +186,7 @@ class Touch extends Adapter {
 
     // Rotation toward target angle
     if (this._targetAngle !== null) {
-      // Find the touch-controlled player from world
-      const worldObjects = engine.world.getObjects();
-      let currentDir = 0;
-      for (const p of worldObjects) {
-        if (p.adapter && p.adapter.type && p.adapter.type() === "touch") {
-          currentDir = p.direction;
-          break;
-        }
-      }
+      const currentDir = this._currentDirection;
 
       // Shortest angular difference
       let diff = this._targetAngle - currentDir;
@@ -236,6 +231,10 @@ class Touch extends Adapter {
     const actions = [...this.actions];
     this.actions = [];
     return actions;
+  }
+
+  setDirection(dir) {
+    this._currentDirection = dir;
   }
 
   type() {

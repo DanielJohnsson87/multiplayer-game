@@ -29,11 +29,6 @@ class Player extends Circle {
     this.attraction = 0;
     if (!options.renderOnly) {
       this._subscribeToLoop();
-    } else {
-      engine.canvas.draw(`player-${this.id}`, (interpolation) => {
-        this.drawAttractionField(interpolation);
-        this.draw(interpolation);
-      });
     }
     engine.world.addObject(this);
   }
@@ -107,10 +102,6 @@ class Player extends Circle {
       }
     });
 
-    engine.canvas.draw(`player-${this.id}`, (interpolation) => {
-      this.drawAttractionField(interpolation);
-      this.draw(interpolation);
-    });
   }
 
   draw(interpolation = 0) {

@@ -1,5 +1,4 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../constants";
-import { SHAPE_WALL } from "../../engine/constants";
 import engine from "../../engine/index";
 import { createGameRunner } from "../../engine/gameRunner";
 import Player from "../../engine/objects/Player";
@@ -23,6 +22,7 @@ function randomPos() {
 // desktop Chrome/Firefox which add touch APIs even without a touchscreen.
 let isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
 let isDebugingClosestPoint = false;
+let runner = null;
 
 (function () {
   engine.init();
@@ -80,9 +80,7 @@ let isDebugingClosestPoint = false;
   );
 
   // Wire the store-based game loop — replaces all physics subscribers
-  const runner = createGameRunner(engine, {
-    createBall: (pos, opts) => new Ball(pos, opts),
-  });
+  runner = createGameRunner(engine);
   runner.init();
 
   const showClosestPointToWalls = document.getElementById(
@@ -97,20 +95,21 @@ let isDebugingClosestPoint = false;
 })();
 
 function drawClosestPointToWalls(_, ctx) {
-  const worldObjects = engine.world.getObjects();
-  const players = worldObjects.filter(obj => obj.shape !== SHAPE_WALL && obj.adapter);
+  if (!runner) return;
+  const state = runner.getState();
+  const entities = Object.values(state.entities);
+  const players = entities.filter(e => e.type === "player");
+  const walls = entities.filter(e => e.type === "wall");
 
   players.forEach((player) => {
-    worldObjects.forEach((object) => {
-      if (object.shape === SHAPE_WALL) {
-        const v = closestPointBallToWall(player, object).subtract(player.pos);
-        ctx.beginPath();
-        ctx.moveTo(player.pos.x + v.x, player.pos.y + v.y);
-        ctx.lineTo(player.pos.x, player.pos.y);
-        ctx.strokeStyle = "red";
-        ctx.stroke();
-        ctx.closePath();
-      }
+    walls.forEach((wall) => {
+      const v = closestPointBallToWall(player, wall).subtract(player.pos);
+      ctx.beginPath();
+      ctx.moveTo(player.pos.x + v.x, player.pos.y + v.y);
+      ctx.lineTo(player.pos.x, player.pos.y);
+      ctx.strokeStyle = "red";
+      ctx.stroke();
+      ctx.closePath();
     });
   });
 }
