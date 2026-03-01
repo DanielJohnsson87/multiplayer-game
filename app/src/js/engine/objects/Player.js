@@ -25,10 +25,10 @@ class Player extends Circle {
   constructor(pos, options = {}) {
     super(pos, { ...defaultArgs, ...options });
     this.adapter = this._setupAdapter(options.adapter); // Could be control, network or perhaps AI?
-    engine.world.addObject(this);
-    this._subscribeToLoop();
     this.initialMass = this.mass;
     this.attraction = 0;
+    this._subscribeToLoop();
+    engine.world.addObject(this);
   }
 
   serialize() {
@@ -94,8 +94,6 @@ class Player extends Circle {
           this.accelerate(acceleration.rotate(this.direction));
         }
       });
-
-      engine.state.setState(this.id, this.serialize());
 
       if (this.adapter.type() === "keyboard") {
         drawHelper(this, this.ctx);

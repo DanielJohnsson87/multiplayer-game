@@ -98,8 +98,8 @@ class Shape {
   serialize() {
     return {
       id: this.id,
-      pos: { x: this.pos.x, y: this.pos.y },
-      velocity: { x: this.velocity.x, y: this.velocity.y },
+      pos: this.pos.toJSON(),
+      velocity: this.velocity.toJSON(),
       direction: this.direction,
       shape: this.shape,
     };

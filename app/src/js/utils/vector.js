@@ -90,6 +90,10 @@ class Vector {
    * @param {number} t
    * @returns
    */
+  toJSON() {
+    return { x: this.x, y: this.y };
+  }
+
   lerp(vector, t) {
     t = Math.min(t, 1);
     const lerpX = (vector.x - this.x) * t;

@@ -40,8 +40,8 @@ class Wall {
   serialize() {
     return {
       id: this.id,
-      start: { x: this.start.x, y: this.start.y },
-      end: { x: this.end.x, y: this.end.y },
+      start: this.start.toJSON(),
+      end: this.end.toJSON(),
       shape: this.shape,
       elasticity: this.elasticity,
       width: this.width,

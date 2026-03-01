@@ -145,26 +145,23 @@ describe("object serialization", () => {
   });
 });
 
-describe("state integration", () => {
-  it("Player passes serializable data to engine.state.setState", () => {
+describe("world integration", () => {
+  it("Player registers itself with world on construction", () => {
+    engine.world.addObject.mockClear();
+    const p = new Player({ x: 0, y: 0 }, { adapter: "keyboard" });
+
+    expect(engine.world.addObject).toHaveBeenCalledWith(p);
+  });
+
+  it("Player does not call setState", () => {
     engine.state.setState.mockClear();
     const p = new Player({ x: 0, y: 0 }, { adapter: "keyboard" });
 
-    // Find the loop callback Player registered and invoke it
     const updateCall = engine.loop.update.mock.calls.find(
       (c) => c[0] === `player-${p.id}`
     );
-    const updateFn = updateCall[1];
-    updateFn(0.016);
+    updateCall[1](0.016);
 
-    const setStateCall = engine.state.setState.mock.calls.find(
-      (c) => c[0] === p.id
-    );
-    expect(setStateCall).toBeTruthy();
-
-    const storedData = setStateCall[1];
-    expect(() => JSON.stringify(storedData)).not.toThrow();
-    expect(storedData).not.toHaveProperty("ctx");
-    expect(storedData).not.toHaveProperty("adapter");
+    expect(engine.state.setState).not.toHaveBeenCalled();
   });
 });
