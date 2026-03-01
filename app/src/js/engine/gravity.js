@@ -6,9 +6,10 @@ import { GRAVITATATIONAL_RADIUS_FACTOR } from "./constants";
 
 let grid = new SpatialGrid(null, { cellSize: 30 });
 let isDebugGrid = false;
+let attractedIds = new Set();
 
 function init() {
-  loop.update("gravity", applyGravity, 1001);
+  loop.update("gravity", applyGravity, 1000);
 }
 
 function destroy() {
@@ -16,15 +17,14 @@ function destroy() {
 }
 
 function applyGravity() {
-  const playersObject = engine.state.getState();
+  attractedIds.clear();
   const worldObjects = engine.world.getObjects();
-  const players = Object.values(playersObject);
 
-  grid.populate([...players, ...worldObjects], GRAVITATATIONAL_RADIUS_FACTOR);
+  grid.populate(worldObjects, GRAVITATATIONAL_RADIUS_FACTOR);
 
   const possibleCollisions = grid.populatedCellsUnique();
 
-  for (const shape of [...players, ...worldObjects]) {
+  for (const shape of worldObjects) {
     const attractedShapes = possibleCollisions[shape.id];
 
     if (!attractedShapes) {
@@ -39,6 +39,10 @@ function applyGravity() {
 
       if (outsideOfGravitationalField) {
         return;
+      }
+
+      if (shape.attraction === 1) {
+        attractedIds.add(attracted.id);
       }
 
       const normal = dist.unit();
@@ -56,8 +60,13 @@ function debugGrid(enable) {
   }
 }
 
+function isAttracted(id) {
+  return attractedIds.has(id);
+}
+
 export default {
   init,
   destroy,
   debugGrid,
+  isAttracted,
 };

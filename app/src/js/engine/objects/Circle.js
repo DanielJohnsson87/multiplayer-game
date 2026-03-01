@@ -35,40 +35,13 @@ class Circle extends Shape {
     }
   }
 
-  draw(interpolation = 0) {
-    const directionVector = new Vector(0, -1).rotate(this.direction);
-
-    const interpolated = {
-      x: this.previousPos.x + (this.pos.x - this.previousPos.x) * interpolation,
-      y: this.previousPos.y + (this.pos.y - this.previousPos.y) * interpolation,
+  serialize() {
+    return {
+      ...super.serialize(),
+      radius: this.radius,
+      mass: this.mass,
+      elasticity: this.elasticity,
     };
-
-    this.ctx.beginPath();
-    this.ctx.lineWidth = 3;
-    this.ctx.arc(
-      interpolated.x,
-      interpolated.y,
-      this.radius - this.lineWidth / 2,
-      0,
-      2 * Math.PI
-    );
-    this.ctx.strokeStyle = this.color;
-    this.ctx.stroke();
-    this.ctx.fillStyle = this.color;
-    this.ctx.fill();
-    this.ctx.closePath();
-
-    this.ctx.lineWidth = 2;
-    this.ctx.beginPath();
-    this.ctx.moveTo(interpolated.x, interpolated.y);
-    this.ctx.lineTo(
-      interpolated.x + directionVector.x * this.radius,
-      interpolated.y + directionVector.y * this.radius
-    );
-    this.ctx.strokeStyle = "#011638";
-    this.ctx.stroke();
-    this.ctx.closePath();
-    this.ctx.lineWidth = 1;
   }
 
   isCollidingWith(shape) {

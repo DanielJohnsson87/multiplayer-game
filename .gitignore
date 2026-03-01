@@ -3,5 +3,6 @@ node_modules
 yarn.lock
 
 app/dist
+app/test-results
 
 server/tmp

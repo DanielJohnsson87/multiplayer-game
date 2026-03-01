@@ -3,17 +3,45 @@ import loop from "./loop";
 let canvas = null;
 let ctx = null;
 let layers = {};
+let stars = [];
+
+function generateStars(count) {
+  stars = [];
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.5 + 0.3,
+      brightness: Math.random(),
+      twinkleSpeed: 0.5 + Math.random() * 2,
+    });
+  }
+}
+
+function drawStars() {
+  const t = Date.now() * 0.001;
+  for (const star of stars) {
+    const alpha =
+      0.3 + 0.7 * ((Math.sin(t * star.twinkleSpeed + star.brightness * 10) + 1) / 2);
+    ctx.beginPath();
+    ctx.arc(star.x, star.y, star.r, 0, 2 * Math.PI);
+    ctx.fillStyle = `rgba(200, 210, 255, ${alpha})`;
+    ctx.fill();
+  }
+}
 
 function init(canvasId) {
   canvas = document.getElementById(canvasId);
-  canvas.style.background = "#011638";
+  canvas.style.background = "#050a18";
 
   ctx = canvas.getContext("2d");
+  generateStars(150);
 
   loop.draw(
     "canvas",
     (interpolation) => {
       clearCanvas();
+      drawStars();
       drawLayers(interpolation);
       // clearLayers();
     },

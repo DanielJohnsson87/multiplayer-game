@@ -1,10 +1,9 @@
 import Vector from "../../utils/vector";
+import uuid from "../../utils/uuid";
 import geometry from "../../utils/geometry";
 import engine from "../index";
 
 const FRICTION = 0.2;
-
-let id = 0;
 
 /**
  * All shapes should extend this class.
@@ -29,17 +28,17 @@ class Shape {
       );
     }
 
-    id++; // TODO Find better way
-    this.id = `${options.shape}-${id}`;
+    this.id = `${options.shape}-${uuid()}`;
     this.pos = new Vector(pos.x, pos.y);
     this.previousPos = new Vector(pos.x, pos.y);
     this.velocity = new Vector(0, 0);
     this.direction = 0;
     this.acceleration = options.acceleration ? options.acceleration : 1;
     this.shape = options.shape;
-    this.ctx = engine.canvas.getContext();
 
-    this._tickSubscribeToLoop();
+    if (!options.renderOnly) {
+      this._tickSubscribeToLoop();
+    }
   }
 
   _tickSubscribeToLoop() {
@@ -98,8 +97,14 @@ class Shape {
     });
   };
 
-  draw() {
-    throw new Error("Method 'draw()' must be implemented.");
+  serialize() {
+    return {
+      id: this.id,
+      pos: this.pos.toJSON(),
+      velocity: this.velocity.toJSON(),
+      direction: this.direction,
+      shape: this.shape,
+    };
   }
 
   isCollidingWith() {

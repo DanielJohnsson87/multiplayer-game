@@ -1,6 +1,6 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../../constants";
-import { SHAPE_WALL } from "../../engine/constants";
 import engine from "../../engine/index";
+import { createGameRunner } from "../../engine/gameRunner";
 import Player from "../../engine/objects/Player";
 import Wall from "../../engine/objects/Wall";
 import { closestPointBallToWall } from "../../engine/physics";
@@ -17,48 +17,43 @@ function randomPos() {
   );
 }
 
-function createOpponents(num) {
-  let opponents = [];
-  for (let i = 0; i < num; i++) {
-    opponents.push(randomPos());
-  }
-
-  return opponents;
-}
-
-const sizes = [10, 10, 15, 15, 20, 25];
-let isDebugingGrid = false;
-let isDebugingGravityGrid = false;
+// Detect touch: pointer:coarse means primary input is a finger (not a mouse/trackpad).
+// The old checks ("ontouchstart" in window, maxTouchPoints) give false positives on
+// desktop Chrome/Firefox which add touch APIs even without a touchscreen.
+let isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
 let isDebugingClosestPoint = false;
+let runner = null;
 
 (function () {
   engine.init();
   engine.canvas.init("canvas");
-  engine.gravity.init();
 
   // Left wall
   new Wall({ x: 0, y: 0 }, { x: 0, y: CANVAS_HEIGHT });
   // Right wall
   new Wall({ x: CANVAS_WIDTH, y: 0 }, { x: CANVAS_WIDTH, y: CANVAS_HEIGHT });
-  // // Top wall
+  // Top wall
   new Wall({ x: 0, y: 0 }, { x: CANVAS_WIDTH, y: 0 });
-  // // Bottom wall
+  // Bottom wall
   new Wall({ x: 0, y: CANVAS_HEIGHT }, { x: CANVAS_WIDTH, y: CANVAS_HEIGHT });
 
   Array.from(Array(25).keys()).forEach(() => {
-    new Ball(randomPos());
+    new Ball(randomPos(), { renderOnly: true });
   });
 
-  new Player({ x: 29, y: 50 }, { adapter: "keyboard", color: "#07A0C3" });
+  // Use URL param to force touch mode (set by runtime detection below)
+  const forceTouch = new URLSearchParams(window.location.search).has("touch");
+  const playerAdapter = isTouchDevice || forceTouch ? "touch" : "keyboard";
+  new Player({ x: 29, y: 50 }, { adapter: playerAdapter, color: "#07A0C3", renderOnly: true });
 
-  engine.collisions.debugGrid(isDebugingGrid);
-  // createOpponents(1).forEach((pos) => {
-  //   new Player(pos, {
-  //     adapter: "ai",
-  //     color: "red",
-  //     radius: sizes[randomNumber(0, 6)],
-  //   });
-  // });
+  // Runtime fallback: if keyboard mode but user touches the screen, reload as touch
+  if (!isTouchDevice && !forceTouch) {
+    const canvas = document.getElementById("canvas");
+    canvas.addEventListener("touchstart", function switchToTouch() {
+      canvas.removeEventListener("touchstart", switchToTouch);
+      window.location.search = "?touch";
+    }, { once: true });
+  }
 
   new Player(
     { x: 100, y: 220 },
@@ -68,6 +63,7 @@ let isDebugingClosestPoint = false;
       radius: 20,
       direction: 180,
       velocity: new Vector(0, 40),
+      renderOnly: true,
     }
   );
 
@@ -79,19 +75,13 @@ let isDebugingClosestPoint = false;
       radius: 20,
       direction: 0,
       velocity: new Vector(0, -40),
+      renderOnly: true,
     }
   );
-  const showGridButton = document.getElementById("showGrid");
-  showGridButton.addEventListener("click", () => {
-    isDebugingGrid = !isDebugingGrid;
-    engine.collisions.debugGrid(isDebugingGrid);
-  });
 
-  const showGravityGrid = document.getElementById("showGravityGrid");
-  showGravityGrid.addEventListener("click", () => {
-    isDebugingGravityGrid = !isDebugingGravityGrid;
-    engine.gravity.debugGrid(isDebugingGravityGrid);
-  });
+  // Wire the store-based game loop — replaces all physics subscribers
+  runner = createGameRunner(engine);
+  runner.init();
 
   const showClosestPointToWalls = document.getElementById(
     "showClosestPointToWall"
@@ -105,20 +95,21 @@ let isDebugingClosestPoint = false;
 })();
 
 function drawClosestPointToWalls(_, ctx) {
-  const worldObjects = engine.world.getObjects();
-  const playersObject = engine.state.getState();
+  if (!runner) return;
+  const state = runner.getState();
+  const entities = Object.values(state.entities);
+  const players = entities.filter(e => e.type === "player");
+  const walls = entities.filter(e => e.type === "wall");
 
-  Object.values(playersObject).forEach((player) => {
-    worldObjects.forEach((object) => {
-      if (object.shape === SHAPE_WALL) {
-        const v = closestPointBallToWall(player, object).subtract(player.pos);
-        ctx.beginPath();
-        ctx.moveTo(player.pos.x + v.x, player.pos.y + v.y);
-        ctx.lineTo(player.pos.x, player.pos.y);
-        ctx.strokeStyle = "red";
-        ctx.stroke();
-        ctx.closePath();
-      }
+  players.forEach((player) => {
+    walls.forEach((wall) => {
+      const v = closestPointBallToWall(player, wall).subtract(player.pos);
+      ctx.beginPath();
+      ctx.moveTo(player.pos.x + v.x, player.pos.y + v.y);
+      ctx.lineTo(player.pos.x, player.pos.y);
+      ctx.strokeStyle = "red";
+      ctx.stroke();
+      ctx.closePath();
     });
   });
 }

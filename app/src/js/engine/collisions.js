@@ -1,4 +1,5 @@
 import SpatialGrid from "../utils/SpatialGrid";
+import Vector from "../utils/vector";
 import engine from "./index";
 import loop from "./loop";
 
@@ -22,12 +23,10 @@ function debugGrid(enable) {
 }
 
 function collisionCheck() {
-  const playersObject = engine.state.getState();
   const worldObjects = engine.world.getObjects();
-  const players = Object.values(playersObject);
 
   // Using the SpatialGrid seems to on average remove up to ~97% (30-35 times faster) of the iterations needed in findCollisions.
-  grid.populate([...players, ...worldObjects]);
+  grid.populate(worldObjects);
   const possibleCollisions = grid.populatedCells();
 
   if (!possibleCollisions || possibleCollisions.length < 0) {
@@ -65,6 +64,15 @@ function findAndHandleCollisions(possibleCollisions) {
           collidingEntity.isCollidingWith(recievingEntity) &&
           !collisionDetected
         ) {
+          // Compute closing speed along collision normal before resolution.
+          // Walls have no velocity/pos, so relSpeed is only meaningful for circle-circle.
+          let relSpeed = 0;
+          if (collidingEntity.velocity && recievingEntity.velocity) {
+            const relVel = collidingEntity.velocity.subtract(recievingEntity.velocity);
+            const normal = collidingEntity.pos.subtract(recievingEntity.pos).unit();
+            relSpeed = Math.abs(Vector.dot(relVel, normal));
+          }
+
           const penetrationResolution =
             collidingEntity.penetrationResolution(recievingEntity);
           const velocityResolution =
@@ -88,6 +96,10 @@ function findAndHandleCollisions(possibleCollisions) {
             ...collisionMap[recievingEntity.id],
             [`${collidingEntity.id}`]: true,
           };
+
+          const collisionData = { relSpeed };
+          collidingEntity.onCollision?.(recievingEntity, collisionData);
+          recievingEntity.onCollision?.(collidingEntity, collisionData);
         }
       }
     }

@@ -1,9 +1,9 @@
 import engine from "../index";
 import AI from "../adapters/AI";
 import Keyboard from "../adapters/Keyboard";
+import Touch from "../adapters/Touch";
 import Vector from "../../utils/vector";
 import Circle from "./Circle";
-import { CANVAS_HEIGHT } from "../../constants";
 import {
   ACTION_ATTRACT,
   ACTION_REPELL,
@@ -11,7 +11,6 @@ import {
   ACTION_MOVE_DOWN,
   ACTION_ROTATE_RIGHT,
   ACTION_ROTATE_LEFT,
-  GRAVITATATIONAL_RADIUS_FACTOR,
   GRAVITATATIONAL_MASS_FACTOR,
 } from "../constants";
 
@@ -24,9 +23,19 @@ class Player extends Circle {
   constructor(pos, options = {}) {
     super(pos, { ...defaultArgs, ...options });
     this.adapter = this._setupAdapter(options.adapter); // Could be control, network or perhaps AI?
-    this._subscribeToLoop();
     this.initialMass = this.mass;
     this.attraction = 0;
+    if (!options.renderOnly) {
+      this._subscribeToLoop();
+    }
+    engine.world.addObject(this);
+  }
+
+  serialize() {
+    return {
+      ...super.serialize(),
+      attraction: this.attraction,
+    };
   }
 
   _setMass(mass) {
@@ -57,13 +66,15 @@ class Player extends Circle {
         return new Keyboard();
       case "ai":
         return new AI();
+      case "touch":
+        return new Touch();
       default:
         throw new Error("Player is missing a valid adapter");
     }
   }
 
   _subscribeToLoop() {
-    engine.loop.update(`player-${this.id}`, (delta) => {
+    engine.loop.update(`player-${this.id}`, () => {
       this._restoreMass();
       this.adapter.readAndClearActions().forEach((tickActions) => {
         const { actions } = tickActions;
@@ -83,42 +94,7 @@ class Player extends Circle {
           this.accelerate(acceleration.rotate(this.direction));
         }
       });
-
-      engine.state.setState(this.id, this);
-
-      if (this.adapter.type() === "keyboard") {
-        drawHelper(this, this.ctx);
-      }
     });
-
-    engine.canvas.draw(`player-${this.id}`, (interpolation) => {
-      this.drawAttractionField(interpolation);
-      this.draw(interpolation);
-    });
-  }
-
-  drawAttractionField(interpolation = 0) {
-    if (!this.attraction) {
-      return;
-    }
-
-    const interpolated = {
-      x: this.previousPos.x + (this.pos.x - this.previousPos.x) * interpolation,
-      y: this.previousPos.y + (this.pos.y - this.previousPos.y) * interpolation,
-    };
-    this.ctx.beginPath();
-
-    this.ctx.arc(
-      interpolated.x,
-      interpolated.y,
-      this.radius * GRAVITATATIONAL_RADIUS_FACTOR,
-      0,
-      2 * Math.PI
-    );
-    this.ctx.fillStyle =
-      this.attraction > 0 ? "rgba(0, 255, 0, 0.15)" : "rgba(255, 0, 0, 0.15)";
-    this.ctx.fill();
-    this.ctx.closePath();
   }
 }
 
@@ -171,37 +147,6 @@ function actionsToRotation(actions) {
   }
 
   return directionChange;
-}
-
-function drawHelper(player, ctx) {
-  const directionVector = new Vector(0, -1).rotate(player.direction);
-
-  drawHelperVector(
-    ctx,
-    player.velocity.x * engine.loop._unsafeDeltaTime(),
-    player.velocity.y * engine.loop._unsafeDeltaTime(),
-    10,
-    "green"
-  );
-  drawHelperVector(ctx, directionVector.x, directionVector.y, 50, "black");
-
-  ctx.beginPath();
-  ctx.arc(550, CANVAS_HEIGHT - 50, 50, 0, 2 * Math.PI);
-  ctx.strokeStyle = "black";
-  ctx.stroke();
-  ctx.closePath();
-}
-
-function drawHelperVector(ctx, x, y, length, color) {
-  const startX = 550;
-  const startY = CANVAS_HEIGHT - 50;
-
-  ctx.beginPath();
-  ctx.moveTo(startX, startY);
-  ctx.lineTo(startX + x * length, startY + y * length);
-  ctx.strokeStyle = color;
-  ctx.stroke();
-  ctx.closePath();
 }
 
 export default Player;
