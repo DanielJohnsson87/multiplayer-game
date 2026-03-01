@@ -9,10 +9,10 @@ Issues in the current codebase that need addressing before multiplayer can work.
 
 ~~Auto-incrementing counters (`circle-1`, `circle-2`...) — every client generates the same IDs independently.~~ Replaced with `crypto.randomUUID()`. IDs now use format `{type}-{uuid}` (e.g. `circle-a1b2c3d4-...`).
 
-### State isn't serializable
+### ~~State isn't serializable~~ ✅ Done
 **File**: `engine/state.js`
 
-State stores raw object references including Canvas contexts, adapters, callbacks. Can't JSON-serialize for network sync. Need to separate simulation state from rendering state.
+~~State stores raw object references including Canvas contexts, adapters, callbacks. Can't JSON-serialize for network sync.~~ Added `serialize()` to all objects. Players moved from state into world. State now stores only serializable snapshots. Consumers (collisions, gravity, touch) read live objects from world.
 
 ### Objects create/destroy themselves
 **Files**: `game/objects/Ball.js`, `engine/world.js`

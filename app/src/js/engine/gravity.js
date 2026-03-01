@@ -18,15 +18,13 @@ function destroy() {
 
 function applyGravity() {
   attractedIds.clear();
-  const playersObject = engine.state.getState();
   const worldObjects = engine.world.getObjects();
-  const players = Object.values(playersObject);
 
-  grid.populate([...players, ...worldObjects], GRAVITATATIONAL_RADIUS_FACTOR);
+  grid.populate(worldObjects, GRAVITATATIONAL_RADIUS_FACTOR);
 
   const possibleCollisions = grid.populatedCellsUnique();
 
-  for (const shape of [...players, ...worldObjects]) {
+  for (const shape of worldObjects) {
     const attractedShapes = possibleCollisions[shape.id];
 
     if (!attractedShapes) {

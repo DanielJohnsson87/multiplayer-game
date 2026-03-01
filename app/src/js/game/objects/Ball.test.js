@@ -163,6 +163,38 @@ describe("Ball IDs", () => {
   });
 });
 
+describe("Ball serialization", () => {
+  it("serialize() returns physics properties", () => {
+    const b = new Ball({ x: 10, y: 20 }, { radius: 15 });
+    const s = b.serialize();
+    expect(s.id).toBe(b.id);
+    expect(s.pos).toEqual({ x: 10, y: 20 });
+    expect(s.radius).toBe(15);
+    expect(s.mass).toBe(b.mass);
+    expect(s.shape).toBe("circle");
+  });
+
+  it("serialize() excludes internal and rendering state", () => {
+    const b = new Ball({ x: 0, y: 0 }, { radius: 20 });
+    const s = b.serialize();
+    expect(s).not.toHaveProperty("ctx");
+    expect(s).not.toHaveProperty("_pendingBreak");
+    expect(s).not.toHaveProperty("_pendingAbsorb");
+    expect(s).not.toHaveProperty("_destroyed");
+    expect(s).not.toHaveProperty("_invulnerable");
+    expect(s).not.toHaveProperty("asteroidVertices");
+    expect(s).not.toHaveProperty("craters");
+    expect(s).not.toHaveProperty("asteroidColor");
+  });
+
+  it("serialize() output is JSON-safe", () => {
+    const b = new Ball({ x: 5, y: 10 }, { radius: 25 });
+    const s = b.serialize();
+    const roundtripped = JSON.parse(JSON.stringify(s));
+    expect(roundtripped).toEqual(s);
+  });
+});
+
 describe("Ball.onCollision — attract immunity", () => {
   let asteroid;
 

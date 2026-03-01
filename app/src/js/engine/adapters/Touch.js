@@ -183,12 +183,10 @@ class Touch extends Adapter {
 
     // Rotation toward target angle
     if (this._targetAngle !== null) {
-      // Get current player direction from engine state
-      const state = engine.state.getState();
-      const players = Object.values(state);
-      // Find the touch-controlled player (there should be only one)
+      // Find the touch-controlled player from world
+      const worldObjects = engine.world.getObjects();
       let currentDir = 0;
-      for (const p of players) {
+      for (const p of worldObjects) {
         if (p.adapter && p.adapter.type && p.adapter.type() === "touch") {
           currentDir = p.direction;
           break;

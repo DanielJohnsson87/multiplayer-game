@@ -95,6 +95,16 @@ class Shape {
     });
   };
 
+  serialize() {
+    return {
+      id: this.id,
+      pos: { x: this.pos.x, y: this.pos.y },
+      velocity: { x: this.velocity.x, y: this.velocity.y },
+      direction: this.direction,
+      shape: this.shape,
+    };
+  }
+
   draw() {
     throw new Error("Method 'draw()' must be implemented.");
   }

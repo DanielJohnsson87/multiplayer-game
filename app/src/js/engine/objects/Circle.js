@@ -35,6 +35,15 @@ class Circle extends Shape {
     }
   }
 
+  serialize() {
+    return {
+      ...super.serialize(),
+      radius: this.radius,
+      mass: this.mass,
+      elasticity: this.elasticity,
+    };
+  }
+
   draw(interpolation = 0) {
     const directionVector = new Vector(0, -1).rotate(this.direction);
 

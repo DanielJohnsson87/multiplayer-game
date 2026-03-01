@@ -122,9 +122,9 @@ let isDebugingClosestPoint = false;
 
 function drawClosestPointToWalls(_, ctx) {
   const worldObjects = engine.world.getObjects();
-  const playersObject = engine.state.getState();
+  const players = worldObjects.filter(obj => obj.shape !== SHAPE_WALL && obj.adapter);
 
-  Object.values(playersObject).forEach((player) => {
+  players.forEach((player) => {
     worldObjects.forEach((object) => {
       if (object.shape === SHAPE_WALL) {
         const v = closestPointBallToWall(player, object).subtract(player.pos);
