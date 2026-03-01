@@ -68,12 +68,6 @@ function draw(id, callback, layer = 1) {
   layers[layer].push({ id, callback });
 }
 
-function removeDraw(id) {
-  Object.keys(layers).forEach((layer) => {
-    layers[layer] = layers[layer].filter((item) => item.id !== id);
-  });
-}
-
 function getContext() {
   return ctx;
 }
@@ -85,6 +79,5 @@ function clearCanvas() {
 export default {
   init,
   draw,
-  removeDraw,
   getContext,
 };

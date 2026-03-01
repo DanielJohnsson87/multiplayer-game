@@ -3,11 +3,7 @@ import { describe, it, expect, vi } from "vitest";
 vi.mock("../index", () => ({
   default: {
     world: { addObject: vi.fn(), removeObject: vi.fn() },
-    canvas: {
-      draw: vi.fn(),
-      removeDraw: vi.fn(),
-      getContext: vi.fn(() => ({})),
-    },
+    canvas: { draw: vi.fn() },
     loop: { update: vi.fn(), unsubscribeFrom: vi.fn() },
     state: { setState: vi.fn() },
     gravity: { isAttracted: vi.fn(() => false) },

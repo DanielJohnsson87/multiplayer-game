@@ -178,11 +178,7 @@ describe("createGameRunner", () => {
         addObject: vi.fn(),
         removeObject: vi.fn(),
       },
-      canvas: {
-        getContext: () => ({}),
-        draw: vi.fn(),
-        removeDraw: vi.fn(),
-      },
+      canvas: { draw: vi.fn() },
       loop,
     };
   });

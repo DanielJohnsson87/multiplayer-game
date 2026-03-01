@@ -35,7 +35,6 @@ class Shape {
     this.direction = 0;
     this.acceleration = options.acceleration ? options.acceleration : 1;
     this.shape = options.shape;
-    this.ctx = engine.canvas.getContext();
 
     if (!options.renderOnly) {
       this._tickSubscribeToLoop();
@@ -106,10 +105,6 @@ class Shape {
       direction: this.direction,
       shape: this.shape,
     };
-  }
-
-  draw() {
-    throw new Error("Method 'draw()' must be implemented.");
   }
 
   isCollidingWith() {

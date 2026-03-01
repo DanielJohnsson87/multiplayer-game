@@ -9,11 +9,7 @@ import {
 vi.mock("../../engine", () => ({
   default: {
     world: { addObject: vi.fn(), removeObject: vi.fn() },
-    canvas: {
-      draw: vi.fn(),
-      removeDraw: vi.fn(),
-      getContext: vi.fn(() => ({})),
-    },
+    canvas: { draw: vi.fn() },
     loop: { update: vi.fn(), unsubscribeFrom: vi.fn() },
     gravity: { isAttracted: vi.fn(() => false) },
   },

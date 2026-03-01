@@ -3,16 +3,8 @@ import { describe, it, expect, vi } from "vitest";
 vi.mock("../index", () => ({
   default: {
     world: { addObject: vi.fn(), removeObject: vi.fn() },
-    canvas: {
-      draw: vi.fn(),
-      removeDraw: vi.fn(),
-      getContext: vi.fn(() => ({
-        beginPath: vi.fn(), closePath: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(),
-        arc: vi.fn(), stroke: vi.fn(), fill: vi.fn(), save: vi.fn(), restore: vi.fn(),
-        strokeStyle: "", fillStyle: "", lineWidth: 1,
-      })),
-    },
-    loop: { update: vi.fn(), unsubscribeFrom: vi.fn(), _unsafeDeltaTime: vi.fn(() => 0.016) },
+    canvas: { draw: vi.fn() },
+    loop: { update: vi.fn(), unsubscribeFrom: vi.fn() },
     state: { setState: vi.fn() },
     gravity: { isAttracted: vi.fn(() => false) },
   },
