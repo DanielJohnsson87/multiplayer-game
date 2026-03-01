@@ -1,4 +1,5 @@
 import Vector from "../../utils/vector";
+import uuid from "../../utils/uuid";
 import geometry from "../../utils/geometry";
 import engine from "../index";
 
@@ -27,7 +28,7 @@ class Shape {
       );
     }
 
-    this.id = `${options.shape}-${crypto.randomUUID()}`;
+    this.id = `${options.shape}-${uuid()}`;
     this.pos = new Vector(pos.x, pos.y);
     this.previousPos = new Vector(pos.x, pos.y);
     this.velocity = new Vector(0, 0);

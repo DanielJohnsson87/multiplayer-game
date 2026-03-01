@@ -1,10 +1,11 @@
 import Vector from "../../utils/vector";
+import uuid from "../../utils/uuid";
 import engine from "../index";
 import { SHAPE_WALL } from "../constants";
 
 class Wall {
   constructor(start, end) {
-    this.id = `wall-${crypto.randomUUID()}`;
+    this.id = `wall-${uuid()}`;
     this.start = new Vector(start.x, start.y);
     this.end = new Vector(end.x, end.y);
     this.elasticity = 2.5;
