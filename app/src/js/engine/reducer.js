@@ -107,16 +107,21 @@ export function applyInputs(state, inputs) {
 
   const entities = { ...state.entities };
   let changed = false;
+  const resetPlayers = new Set();
 
   for (const { playerId, actions } of inputs) {
     const player = entities[playerId];
     if (!player || player.type !== "player") continue;
 
     let updated = { ...player };
-    // Restore mass to initial each frame
-    updated.mass = updated.initialMass;
-    updated.inverseMass = updated.initialMass === 0 ? 0 : 1 / updated.initialMass;
-    updated.attraction = 0;
+
+    // Restore mass to initial once per frame per player (not per input entry)
+    if (!resetPlayers.has(playerId)) {
+      updated.mass = updated.initialMass;
+      updated.inverseMass = updated.initialMass === 0 ? 0 : 1 / updated.initialMass;
+      updated.attraction = 0;
+      resetPlayers.add(playerId);
+    }
 
     const mass = actionToAttraction(updated.initialMass, actions);
     if (mass) {

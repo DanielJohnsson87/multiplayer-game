@@ -37,7 +37,9 @@ class Shape {
     this.shape = options.shape;
     this.ctx = engine.canvas.getContext();
 
-    this._tickSubscribeToLoop();
+    if (!options.renderOnly) {
+      this._tickSubscribeToLoop();
+    }
   }
 
   _tickSubscribeToLoop() {

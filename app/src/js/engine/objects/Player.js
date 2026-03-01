@@ -27,7 +27,14 @@ class Player extends Circle {
     this.adapter = this._setupAdapter(options.adapter); // Could be control, network or perhaps AI?
     this.initialMass = this.mass;
     this.attraction = 0;
-    this._subscribeToLoop();
+    if (!options.renderOnly) {
+      this._subscribeToLoop();
+    } else {
+      engine.canvas.draw(`player-${this.id}`, (interpolation) => {
+        this.drawAttractionField(interpolation);
+        this.draw(interpolation);
+      });
+    }
     engine.world.addObject(this);
   }
 

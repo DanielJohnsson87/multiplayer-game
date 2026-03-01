@@ -17,11 +17,12 @@ function seededRandom(seed) {
 }
 
 class Ball extends Circle {
-  constructor(pos, { radius = 20, velocity } = {}) {
-    super(pos, { elasticity: 1, radius, color: "#F2F4FF" });
+  constructor(pos, { radius = 20, velocity, renderOnly = false } = {}) {
+    super(pos, { elasticity: 1, radius, color: "#F2F4FF", renderOnly });
     engine.world.addObject(this);
 
     this._destroyed = false;
+    this._renderOnly = renderOnly;
     this._pendingBreak = false;
     this._pendingAbsorb = null; // reference to asteroid to absorb
     this._invulnerable = 0; // frames of invulnerability after spawning
@@ -54,7 +55,13 @@ class Ball extends Circle {
       this.velocity = new Vector(velocity.x, velocity.y);
     }
 
-    this._subscribeToLoop();
+    if (!renderOnly) {
+      this._subscribeToLoop();
+    } else {
+      engine.canvas.draw(`ball-${this.id}`, (interpolation) => {
+        this._drawAsteroid(interpolation);
+      });
+    }
   }
 
   _subscribeToLoop() {
@@ -77,8 +84,10 @@ class Ball extends Circle {
     if (this._destroyed) return;
     this._destroyed = true;
     engine.world.removeObject(this.id);
-    engine.loop.unsubscribeFrom("update", `shape-tick-${this.id}`);
-    engine.loop.unsubscribeFrom("update", `ball-break-${this.id}`);
+    if (!this._renderOnly) {
+      engine.loop.unsubscribeFrom("update", `shape-tick-${this.id}`);
+      engine.loop.unsubscribeFrom("update", `ball-break-${this.id}`);
+    }
     engine.canvas.removeDraw(`ball-${this.id}`);
   }
 
