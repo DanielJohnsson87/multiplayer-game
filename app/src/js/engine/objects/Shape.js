@@ -4,8 +4,6 @@ import engine from "../index";
 
 const FRICTION = 0.2;
 
-let id = 0;
-
 /**
  * All shapes should extend this class.
  */
@@ -29,8 +27,7 @@ class Shape {
       );
     }
 
-    id++; // TODO Find better way
-    this.id = `${options.shape}-${id}`;
+    this.id = `${options.shape}-${crypto.randomUUID()}`;
     this.pos = new Vector(pos.x, pos.y);
     this.previousPos = new Vector(pos.x, pos.y);
     this.velocity = new Vector(0, 0);

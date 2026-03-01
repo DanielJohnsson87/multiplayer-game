@@ -2,12 +2,9 @@ import Vector from "../../utils/vector";
 import engine from "../index";
 import { SHAPE_WALL } from "../constants";
 
-let id = 0;
-
 class Wall {
   constructor(start, end) {
-    id++; // TODO Find better way
-    this.id = `wall-${id}`;
+    this.id = `wall-${crypto.randomUUID()}`;
     this.start = new Vector(start.x, start.y);
     this.end = new Vector(end.x, end.y);
     this.elasticity = 2.5;

@@ -22,6 +22,8 @@ vi.mock("../../engine", () => ({
 import Ball from "./Ball";
 import engine from "../../engine";
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
 // Helper: minimum relSpeed for selfMass to break when colliding with otherMass
 function breakSpeed(selfMass, otherMass, durabilityMultiplier = 1) {
   const reducedMass = (selfMass * otherMass) / (selfMass + otherMass);
@@ -144,6 +146,20 @@ describe("asteroidCollisionOutcome", () => {
       const speed = breakSpeed(tiny, also_tiny) * 1.1;
       expect(asteroidCollisionOutcome(tiny, also_tiny, speed)).toBe("break");
     });
+  });
+});
+
+describe("Ball IDs", () => {
+  it("has a UUID-based id with circle prefix", () => {
+    const b = new Ball({ x: 0, y: 0 }, { radius: 20 });
+    expect(b.id).toMatch(/^circle-/);
+    expect(b.id.replace("circle-", "")).toMatch(UUID_REGEX);
+  });
+
+  it("generates unique ids across instances", () => {
+    const a = new Ball({ x: 0, y: 0 }, { radius: 20 });
+    const b = new Ball({ x: 10, y: 10 }, { radius: 20 });
+    expect(a.id).not.toBe(b.id);
   });
 });
 
